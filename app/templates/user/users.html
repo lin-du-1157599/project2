@@ -1,0 +1,115 @@
+{% extends 'userbase.html' %}
+{% block title %}User Management{% endblock %}
+
+{# Set the active page to be highlighted in the navigation bar. #}
+{% set active_page = 'all_users' %}
+
+{% block content %}
+
+<section class="container col-lg-10 col-md-10 col-sm-12 mx-auto p-5">
+    <h2 class="text-center align-middle fw-bold py-2">{{ 'All' if all_users else 'Admin/Editor' }}  User</h2>
+    <p class="text-center align-middle lead text-muted">Manage and view {{ 'all' if all_users else 'admin/editor' }} users. You can update user roles and change statuses as needed.</p>
+
+    <form action="{{ url_for('search_all_users' if all_users else 'search_system_users') }}" method="GET">
+        <div class="row justify-content-center py-4">
+            <div class="col-lg-10 col-12 d-md-flex gap-3">
+                <input type="text" name="searchterm" id="searchterm" class="form-control form-control-lg mb-3" placeholder="Search by" value="{{ keyword }}">
+                <select name="searchcat" id="searchcat" class="form-select form-select-lg  mb-3">
+                    <option value="username" {% if searchType == 'username' %}selected{% endif %}>Username</option>
+                    <option value="full_name" {% if searchType == 'full_name' %}selected{% endif %}>Full Name(First Last)</option>
+                    <option value="first_name" {% if searchType == 'first_name' %}selected{% endif %}>First Name</option>
+                    <option value="last_name" {% if searchType == 'last_name' %}selected{% endif %}>Last Name</option>
+                    <option value="email" {% if searchType == 'email' %}selected{% endif %}>Email</option>
+                </select>
+                <input type="submit" class="btn btn-primary btn-lg col-md-2 col-12 mb-3" value="Search">
+
+                {% if all_users %}
+                    <a href="{{ url_for('all_users') }}" class="btn btn-secondary btn-lg col-md-2 col-12 mb-3" id="cancelSearch" style="display: none;">Cancel</a>
+                {% else %}
+                    <a href="{{ url_for('system_users') }}" class="btn btn-secondary btn-lg col-md-2 col-12 mb-3" id="cancelSearch" style="display: none;">Cancel</a>
+                {% endif %}
+
+                {% if all_users %}
+                    <a href="{{ url_for('system_users') }}" class="btn btn-primary col-12 mb-3 d-flex align-items-center justify-content-center" style="height: 50px; width: auto;">View {{ 'Admin/Editor' if all_users else 'All' }} Users</a>
+                {% else %}
+                    <a href="{{ url_for('all_users') }}" class="btn btn-primary col-12 mb-3 d-flex align-items-center justify-content-center" style="height: 50px; width: auto;">View {{ 'Admin/Editor' if all_users else 'All' }} Users</a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+    
+{% if userslist %}
+    {% for users in userslist %}
+        <input type="hidden" name="user_id" id="user_id" value="{{ users['user_id'] }}">
+    {% endfor %}
+{% else %}
+    <p class="text-center align-middle lead text-muted">No results found.</p>
+{% endif %}
+
+    {% if userslist %}
+
+    <!-- User Lists -->
+    <div class="table-responsive py-2">
+        <table class="table table-hover align-middle" style="border-radius: 20px;border: 1px solid #ddd;overflow: hidden;">
+            <thead class="table-light align-middle">
+                <tr>
+                    <th class="col-1 p-3">Username</th>
+                    <th class="col-2 p-3">First Name</th>
+                    <th class="col-2 p-3">Last Name</th>
+                    <th class="col-3 p-3">Email</th>
+                    <th class="col-1 p-3">Role</th>
+                    <th class="col-1 p-3">Status</th>
+                    <th class="col-2 p-3">View</th>
+                </tr>
+            </thead>
+
+            {% for users in userslist %}
+            <tbody>
+                    <tr>
+                        <td class="p-3">
+                            {{users['username'] }}
+                            {% if session.get('username') == users.username %} (You) {% endif %}
+                        </td>
+                        <td class="p-3">{{ users['first_name'] }}</td>
+                        <td class="p-3">{{ users['last_name'] }}</td>
+                        <td class="p-3">{{ users['email'] }}</td>
+                        <td class="p-3">{{ users['role'] }}</td>
+                        <td class="p-3">{{ users['status'] }}</td>
+                        <td class="p-3">
+                            <a href="{{ url_for('edit_user') }}?user_id={{ users['user_id'] }}" class="btn btn-outline-primary btn-lg me-2">Manage User</a>
+                        </td>
+                    </tr>
+            </tbody>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+        <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const keywordInput = document.getElementById('searchterm');
+        const cancelButton = document.getElementById('cancelSearch');
+
+        // Show the cancel button if there is content in the input field
+        if (keywordInput.value.trim() !== '') {
+            cancelButton.style.display = 'inline-block';
+        }
+
+        // Show the cancel button when typing in the input field
+        keywordInput.addEventListener('input', function() {
+            if (keywordInput.value.trim() !== '') {
+                cancelButton.style.display = 'inline-block';
+            } else {
+                cancelButton.style.display = 'none';
+            }
+        });
+    });
+</script>
+    <style>
+        #searchterm::placeholder {
+            font-size: 1.2rem; /* Adjust the size as needed */
+        }
+    </style>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'userbase.html' %}
+{% set active_page = 'myjourney' %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="container px-5 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 px-2">
+            <div class="p-5" style="background-color: #f0f0f0; border-radius: 40px;">
+                <!-- Add New Event - Title -->
+                <div>
+                    <h1 class="fw-bold pb-2">Create a New Event</h1>
+                    <p class="fs-5">Keep track of the little moments — with a title, time, location, and a short note to bring it all back.</p>
+                </div>
+
+                <!-- Add New Event - Form -->
+                <div class="py-4">
+                    <form action="{{ url_for('add_event', journey_id = journey.journey_id) }}" method="POST" enctype="multipart/form-data">
+
+                        <input type="hidden" name="user_id" id="user_id" value="{{ user_id }}">
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold fs-5">Title*</label>
+                            <input type="text" class="form-control form-control-lg" id="title" name="title" required
+                                maxlength="100" placeholder="Enter event title" value="{{ form_data.title if form_data is defined else '' }}">
+                            <div id="titleHelp" class="form-text">Max 100 characters.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-bold fs-5">Description</label>
+                            <textarea class="form-control form-control-lg" id="description" name="description" rows="3"
+                                    placeholder="Enter event description">{{ form_data.description if form_data is defined else '' }}</textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="start_time" class="form-label fw-bold fs-5">Start Time*</label>
+                                <input type="datetime-local" class="form-control form-control-lg" id="start_time"
+                                    name="start_time" required value="{{ form_data.start_time if form_data is defined else '' }}">
+                                 <div class="form-text">Start time should not be earlier than journey start time.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="end_time" class="form-label fw-bold fs-5">End Time</label>
+                                <input type="datetime-local" class="form-control form-control-lg" id="end_time"
+                                    name="end_time" value="{{ form_data.end_time if form_data is defined and form_data.end_time else '' }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="location" class="form-label fw-bold fs-5">Location*</label>
+                            <input type="text" class="form-control form-control-lg" id="location" name="location"
+                                list="locationsList" maxlength="100" placeholder="Enter or select a location" required autocomplete="off"
+                                value="{{ form_data.location if form_data is defined else '' }}">
+                            <datalist id="locationsList">
+                                {% for location in all_locations %}
+                                    <option value="{{ location }}">
+                                {% endfor %}
+                            </datalist>
+                            <div id="locationHelp" class="form-text">Max 100 characters.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="event_image" class="form-label fw-bold fs-5">Event Image</label>
+                            <input type="file" class="form-control form-control-lg" id="event_image" name="event_image"
+                                accept="image/*">
+                            <div class="form-text">Optional: You can add one image. Supported formats: JPG, PNG, GIF.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3 py-4">
+                            <a href="{{ url_for('view_journey', journey_id=journey.journey_id, mode='all') }}"
+                            class="btn btn-outline-back btn-lg" style="width: 160px;">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg" style="width: 160px;">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove any date restrictions on start_time
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+
+
+    // Update end_time min when start_time changes
+    startTimeInput.addEventListener('change', function() {
+        endTimeInput.min = this.value;
+    });
+
+    // Initialize end_time min based on current start_time value
+    endTimeInput.min = startTimeInput.value;
+});
+</script>
+{% endblock %}

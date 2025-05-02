@@ -1,0 +1,105 @@
+{% extends "base/userbase.html" %}
+{% block title %}Editing Journey{% endblock %}
+{% if mode == 'public' %}
+        {% set active_page = 'public_journeys' %}
+    {% elif mode == 'all' %}
+        {% set active_page = 'myjourney' %}
+    {% endif %}
+{% block content %}
+  
+<div class="container d-flex justify-content-center px-5 pb-5">
+
+    <div class="col-md-8 px-2">
+        <div class="p-5" style="background-color: #f0f0f0; border-radius: 40px;">
+            
+            <!-- Add New Journey - Title -->
+            <div>
+                <h1 class="fw-bold pb-2">Edit Journey</h1>
+                <p class="fs-5"></p>
+            </div>
+
+            <!-- Add New Journey - Form -->
+            <div class="py-4">
+                <form action="/journey/edit" id="edit_journey_form" method="POST">
+                    <input type="hidden" name="journey_id" id="journey_id" value="{{ journey_id }}">
+                    <input type="hidden" name="mode" id="mode" value="{{ mode }}">
+
+                    <div class="mb-3">
+                        <label for="title" class="fw-bold fs-5 py-2">Title*</label>
+                        <input type="text" name="title" minlength="1" maxlength="100" class="form-control form-control-lg" value="{{ journey.title }}" required>
+                        <div id="titleHelp" class="form-text">Max 100 characters.</div> 
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="start_date" class="fw-bold fs-5 py-2">Start Date*</label>
+                        <input id="start_date" name="start_date" class="form-control form-control-lg" type="date" 
+                               value="{{ journey.start_date.strftime('%Y-%m-%d') }}" 
+                               {% if mode != 'all' %} readonly {% endif %} required />
+                    </div>                    
+
+                    <div class="mb-3">
+                        <label for="description" class="fw-bold fs-5 py-2">Description*</label>
+                        <textarea name="description" id="description" class="form-control form-control-lg" rows="5" minlength="1" maxlength="500" required>{{ journey.description }}</textarea>
+                    </div>
+
+                    <!-- Journey Visibility Switch -->
+                    <div class="mb-3">
+                        <label class="fw-bold fs-5 py-2">Journey Visibility*</label>
+                        <div class="form-check form-switch d-flex align-items-center">
+                            <input class="form-check-input mb-1 pe-4" type="checkbox" role="switch"
+                                   id="statusSwitch" name="status_switch"
+                                   style="transform: scale(2); transform-origin: left center; margin-right: 2.2em;"
+                                   {% if mode != 'all' %} disabled {% endif %}
+                                   {% if journey.status == 'public' %} checked {% endif %} />
+                            <label class="form-check-label ms-2" for="statusSwitch">
+                                <span class="badge rounded-pill" id="statusBadge">
+                                    {% if journey.status == 'public' %} Public {% else %} Private {% endif %}
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-text pt-2">Private journeys are only visible to you. Public journeys can be seen by all users.</div>
+                    </div>
+                    <!-- Hidden field for actual status value -->
+                    <input type="hidden" id="status" name="status" value="{{ journey.status }}"><div class="d-flex justify-content-center py-4">
+                                            <input type="submit" class="btn btn-primary btn-lg w-100" value="Submit">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    // Get references to the switch, badge, and hidden status elements
+    const statusSwitch = document.getElementById('statusSwitch');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusHidden = document.getElementById('status');
+
+    // Add event listener to update the badge and hidden value when the switch is toggled
+    statusSwitch.addEventListener('change', function() {
+        if (this.checked) {
+            statusBadge.textContent = 'Public';
+            statusBadge.classList.remove('bg-secondary');
+            statusBadge.classList.add('bg-primary');
+            statusHidden.value = 'public';
+        } else {
+            statusBadge.textContent = 'Private';
+            statusBadge.classList.remove('bg-primary');
+            statusBadge.classList.add('bg-secondary');
+            statusHidden.value = 'private';
+        }
+    });
+
+    // Initialize the badge styling based on current status
+    document.addEventListener('DOMContentLoaded', function() {
+        if (statusHidden.value === 'public') {
+            statusBadge.classList.add('bg-primary');
+        } else {
+            statusBadge.classList.add('bg-secondary');
+        }
+    });
+</script>
+
+{% endblock %}
