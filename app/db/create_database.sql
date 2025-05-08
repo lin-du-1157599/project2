@@ -8,6 +8,11 @@ DROP TABLE IF EXISTS achievements;
 DROP TABLE IF EXISTS user_achievements;
 DROP TABLE IF EXISTS achievement_leaderboard;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS locations;
+DROP TABLE IF EXISTS event_comments;
+DROP TABLE IF EXISTS comment_reactions;
+DROP TABLE IF EXISTS private_messages;
+DROP TABLE IF EXISTS comment_reports;
 
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -119,5 +124,55 @@ ADD COLUMN destination_location_id INT,
 ADD FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
 ADD FOREIGN KEY (departure_location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
 ADD FOREIGN KEY (destination_location_id) REFERENCES locations(location_id) ON DELETE RESTRICT;
+
+CREATE TABLE event_comments (
+    comment_id INT AUTO_INCREMENT PRIMARY KEY,
+    event_id INT NOT NULL,
+    user_id INT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_hidden TINYINT NOT NULL DEFAULT 0,  -- 是否被隐藏（0 = 显示，1 = 隐藏）
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE comment_reactions (
+    reaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    comment_id INT NOT NULL,
+    user_id INT NOT NULL,
+    reaction_type ENUM('like', 'dislike') NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(comment_id, user_id), -- 一个用户对同一评论只能点赞或点踩一次
+    FOREIGN KEY (comment_id) REFERENCES event_comments(comment_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE private_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    content TEXT NOT NULL,
+    sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE comment_reports (
+    report_id INT AUTO_INCREMENT PRIMARY KEY,
+    comment_id INT NOT NULL,
+    reported_by INT NOT NULL,
+    reason ENUM('abusive', 'offensive', 'spam') NOT NULL,
+    report_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reviewed_by INT,
+    review_action ENUM('keep', 'hidden', 'escalated'),
+    reviewed_at DATETIME,
+    FOREIGN KEY (comment_id) REFERENCES event_comments(comment_id) ON DELETE CASCADE,
+    FOREIGN KEY (reported_by) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES users(user_id)
+);
+
+ALTER TABLE users MODIFY role ENUM('traveller', 'editor', 'admin', 'moderator') NOT NULL DEFAULT 'traveller';
+
+ALTER TABLE users ADD COLUMN is_public_profile TINYINT NOT NULL DEFAULT 0;
 
 SET FOREIGN_KEY_CHECKS = 1;
