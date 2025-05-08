@@ -1,7 +1,12 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- Drop existing tables to ensure no conflicts.
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS journeys;
 DROP TABLE IF EXISTS announcements;
+DROP TABLE IF EXISTS achievements;
+DROP TABLE IF EXISTS user_achievements;
+DROP TABLE IF EXISTS achievement_leaderboard;
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
@@ -54,3 +59,50 @@ CREATE TABLE announcements (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE RESTRICT  -- Ensures user_id references a valid user in the users table, preventing deletion of users with associated records
 );
 
+CREATE TABLE achievements (
+  achievement_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(45) NULL,
+  icon_url VARCHAR(255) NOT NULL,
+  is_premium_only TINYINT NOT NULL DEFAULT 0,
+  condition_type ENUM('One-time', 'First-time', 'Cumulative') NOT NULL,
+  condition_value INT NULL
+);
+
+CREATE TABLE user_achievements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  achievement_id INT NOT NULL,
+  is_unlocked TINYINT NOT NULL DEFAULT 0,
+  unlocked_at DATETIME NULL,
+  progress INT NULL DEFAULT 0,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `user_id_idx` (`user_id` ASC) VISIBLE,
+  INDEX `achievement_id_idx` (`achievement_id` ASC) VISIBLE,
+  CONSTRAINT `fk_user_achievement_user_id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `journey_log`.`users` (`user_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `achievement_id`
+    FOREIGN KEY (`achievement_id`)
+    REFERENCES `journey_log`.`achievements` (`achievement_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE achievement_leaderboard (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  total_achievements INT NOT NULL,
+  last_updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `user_id_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_leaderboard_user_id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `journey_log`.`users` (`user_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+SET FOREIGN_KEY_CHECKS = 1;
