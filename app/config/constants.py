@@ -47,6 +47,7 @@ URL_MYJOURNEY = 'myjourney'
 URL_PUBLIC_JOURNEY = 'public_journeys'
 URL_HOME = 'home'
 URL_ROOT = 'root'
+URL_ANNOUNCEMENTS = 'announcements_list'
 
 # Template file names
 TEMPLATE_HOME = 'home.html'
@@ -73,6 +74,11 @@ TEMPLATE_EVENTS = 'events.html'
 TEMPLATE_ADD_EVENT = 'add_event.html'
 TEMPLATE_EDIT_EVENT = 'edit_event.html'
 TEMPLATE_DELETE_EVENT = 'delete_event.html'
+
+# Announcement templates
+TEMPLATE_ANNOUNCEMENTS = 'announcements.html'
+TEMPLATE_ADD_ANNOUNCEMENTS = 'add_announcement.html'
+TEMPLATE_VIEW_ANNOUNCEMENTS = 'view_announcement.html'
 
 # HTTP status codes
 # User permission-related issues
@@ -108,3 +114,9 @@ JOURNEY_STATUS_PRIVATE = 'private'
 REQUEST_MODE = 'mode'
 MODE_PUBLIC='public'
 MODE_ALL = 'all'
+
+# Announcement information fields
+ANNOUNCEMENT_ID = 'announcement_id'
+TITLE = "title"
+CONTENT = 'content'
+CREATED_TIME = 'created_time'

@@ -161,3 +161,22 @@ def validate_journey(title, description, start_date, status=None):
         return False, errors
     else:
         return True, None
+    
+def validate_announcement(title, content):
+    errors = []
+
+    # Validate title (VARCHAR(100))
+    if not title:
+        errors.append("Title is required")
+    elif len(title) > 100:
+        errors.append("Title must be less than 100 characters")
+
+    # Validate content (TEXT)
+    if not content:
+        errors.append("Content is required")
+
+    # Return validation result
+    if errors:
+        return False, errors
+    else:
+        return True, None
