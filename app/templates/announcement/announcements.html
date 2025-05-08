@@ -1,0 +1,46 @@
+{% extends 'userbase.html' %}
+{% block title %}Announcements{% endblock %}
+
+{# Set the active page to be highlighted in the navigation bar. #}
+{% set active_page = 'announcements_list' %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<section class="container col-lg-9 col-md-10 col-sm-12 mx-auto p-5">
+    <h2 class="text-center align-middle fw-bold py-2">Announcements</h2>
+    <p class="text-center align-middle lead text-muted">See what's new in our community — important announcements, updates, and more.</p>
+
+    {% if announcementsList %}
+    <!-- Announcement List -->
+    <div class="table-responsive py-4">
+        <table class="table table-hover align-middle" style="border-radius: 20px;border: 1px solid #ddd;overflow: hidden;">
+            <thead class="table-light align-middle">
+                <tr>
+                    <th class="col-10 p-3">Title</th>
+                    <th class="col-2 p-3">Created Time</th>
+                </tr>
+            </thead>
+
+            {% for announcement in announcementsList %}
+            <input type="hidden" id="announcement_id" name="announcement_id" value="{{ announcement.announcement_id }}">
+            <tbody>
+                    <tr>
+                        <td class="p-3"><a href="{{ url_for('announcements_detail', announcement_id = announcement.announcement_id) }}" style="font-weight: bold;">{{ announcement['title'] }}</a></td>
+                        <td class="p-3">{{ announcement['created_time'].strftime('%d %b %Y') }}</td>
+                    </tr>
+            </tbody>
+            {% endfor %}
+        </table>
+    </div>
+    {% else %}
+    <!-- No announcements message -->
+    <div class="text-center my-5 py-5" style="background-color: #f0f0f0; border-radius: 40px;">
+        <i class="fas fa-bullhorn fa-5x my-4" style="color: #ccc;"></i>
+        <h3 class="text-muted">No announcements available yet.</h3>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}
