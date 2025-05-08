@@ -82,12 +82,12 @@ CREATE TABLE user_achievements (
   INDEX `achievement_id_idx` (`achievement_id` ASC) VISIBLE,
   CONSTRAINT `fk_user_achievement_user_id`
     FOREIGN KEY (`user_id`)
-    REFERENCES `journey_log`.`users` (`user_id`)
+    REFERENCES users (`user_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `achievement_id`
     FOREIGN KEY (`achievement_id`)
-    REFERENCES `journey_log`.`achievements` (`achievement_id`)
+    REFERENCES achievements (`achievement_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
@@ -100,9 +100,24 @@ CREATE TABLE achievement_leaderboard (
   INDEX `user_id_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_leaderboard_user_id`
     FOREIGN KEY (`user_id`)
-    REFERENCES `journey_log`.`users` (`user_id`)
+    REFERENCES users (`user_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
+
+CREATE TABLE locations (
+    location_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    latitude DECIMAL(9, 6) NOT NULL,
+    longitude DECIMAL(9, 6) NOT NULL
+);
+
+ALTER TABLE events 
+ADD COLUMN location_id INT,
+ADD COLUMN departure_location_id INT,
+ADD COLUMN destination_location_id INT,
+ADD FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
+ADD FOREIGN KEY (departure_location_id) REFERENCES locations(location_id) ON DELETE RESTRICT,
+ADD FOREIGN KEY (destination_location_id) REFERENCES locations(location_id) ON DELETE RESTRICT;
 
 SET FOREIGN_KEY_CHECKS = 1;
