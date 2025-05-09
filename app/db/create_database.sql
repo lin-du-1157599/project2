@@ -222,4 +222,10 @@ ALTER TABLE users
 ALTER TABLE announcements
 MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active';
 
+ALTER TABLE journeys
+MODIFY status ENUM('private', 'public', 'published') NOT NULL DEFAULT 'private';
+
+ALTER TABLE journeys
+ADD COLUMN cover_image VARCHAR(255);
+
 SET FOREIGN_KEY_CHECKS = 1;
