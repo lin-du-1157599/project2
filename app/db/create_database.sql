@@ -4,6 +4,9 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS journeys;
 DROP TABLE IF EXISTS announcements;
+DROP TABLE IF EXISTS subscriptions;
+DROP TABLE IF EXISTS user_subscriptions;
+DROP TABLE IF EXISTS subscription_payments;
 DROP TABLE IF EXISTS achievements;
 DROP TABLE IF EXISTS user_achievements;
 DROP TABLE IF EXISTS achievement_leaderboard;
@@ -59,9 +62,48 @@ CREATE TABLE announcements (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     created_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('active', 'inactive') NOT NULL,
+    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
     level ENUM('high', 'medium', 'low') NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE RESTRICT  -- Ensures user_id references a valid user in the users table, preventing deletion of users with associated records
+);
+
+CREATE TABLE subscriptions (
+    subscription_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,                
+    duration_months INT NOT NULL,             
+    is_free_trial TINYINT NOT NULL DEFAULT 0, 
+    discount_percent DECIMAL(5,2), 
+    price_nzd_excl_gst DECIMAL(5,2),         
+    price_nzd_incl_gst DECIMAL(5,2),         
+    is_admin_grantable TINYINT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE user_subscriptions (
+    user_subscription_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    subscription_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    was_admin_granted TINYINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (subscription_id) REFERENCES subscriptions(subscription_id)
+);
+
+CREATE TABLE subscription_payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    billing_country VARCHAR(100) NOT NULL,
+    amount_paid DECIMAL(5,2) NOT NULL,
+    gst_amount DECIMAL(5,2),
+    currency VARCHAR(10) DEFAULT 'NZD',
+    card_number VARCHAR(19) NOT NULL,
+    expiry_date VARCHAR(7) NOT NULL,
+    cvv VARCHAR(4) NOT NULL,                    
+    user_subscription_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (user_subscription_id) REFERENCES user_subscriptions(user_subscription_id)
 );
 
 CREATE TABLE achievements (
@@ -173,6 +215,11 @@ CREATE TABLE comment_reports (
 
 ALTER TABLE users MODIFY role ENUM('traveller', 'editor', 'admin', 'moderator') NOT NULL DEFAULT 'traveller';
 
-ALTER TABLE users ADD COLUMN is_public_profile TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE users 
+    ADD COLUMN subscription_status ENUM('Free', 'Trial', 'Premium') NOT NULL DEFAULT 'Free',
+    ADD COLUMN is_public_profile TINYINT NOT NULL DEFAULT 0;
+
+ALTER TABLE announcements
+MODIFY COLUMN status ENUM('active', 'inactive') NOT NULL DEFAULT 'active';
 
 SET FOREIGN_KEY_CHECKS = 1;
