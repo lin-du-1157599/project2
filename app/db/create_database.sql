@@ -213,6 +213,23 @@ CREATE TABLE comment_reports (
     FOREIGN KEY (reviewed_by) REFERENCES users(user_id)
 );
 
+CREATE TABLE user_follows (
+    user_follow_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,  -- 关注者用户ID
+    followed_id INT NOT NULL,  -- 被关注的ID（可能是旅程、用户或地点）
+    follow_type ENUM('journey', 'user', 'location') NOT NULL,  -- 关注的类型：旅程、用户、地点
+    followed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 关注时间
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    -- 使用联合唯一键确保每个用户对每个对象（旅程、用户、地点）的关注只有一条记录
+    UNIQUE(user_id, followed_id, follow_type)  
+);
+
+CREATE TABLE departure_board_events (
+    event_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_follow_id INT NOT NULL,
+    FOREIGN KEY (user_follow_id) REFERENCES user_follows(user_follow_id) ON DELETE CASCADE
+);
+
 ALTER TABLE users MODIFY role ENUM('traveller', 'editor', 'admin', 'moderator') NOT NULL DEFAULT 'traveller';
 
 ALTER TABLE users 
