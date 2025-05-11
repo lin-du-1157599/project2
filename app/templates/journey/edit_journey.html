@@ -49,7 +49,7 @@
                             <input class="form-check-input mb-1 pe-4" type="checkbox" role="switch"
                                    id="statusSwitch" name="status_switch"
                                    style="transform: scale(2); transform-origin: left center; margin-right: 2.2em;"
-                                   {% if mode != 'all' %} disabled {% endif %}
+                                   {% if (mode != 'all') or (journey.is_hidden == 1) %} disabled {% endif %}
                                    {% if journey.status == 'public' %} checked {% endif %} />
                             <label class="form-check-label ms-2" for="statusSwitch">
                                 <span class="badge rounded-pill" id="statusBadge">
@@ -59,9 +59,32 @@
                         </div>
                         <div class="form-text pt-2">Private journeys are only visible to you. Public journeys can be seen by all users.</div>
                     </div>
-                    <!-- Hidden field for actual status value -->
-                    <input type="hidden" id="status" name="status" value="{{ journey.status }}"><div class="d-flex justify-content-center py-4">
-                                            <input type="submit" class="btn btn-primary btn-lg w-100" value="Submit">
+
+                    {% if user_role != 'traveller'%}
+                    <!-- Journey Hidden Switch -->
+                    <div class="mb-3">
+                        <label class="fw-bold fs-5 py-2">Hide on Public Journey Page</label>
+                        <div class="form-check form-switch d-flex align-items-center">
+                            <input class="form-check-input mb-1 pe-4" type="checkbox" role="switch"
+                                   id="hiddenSwitch" name="hidden_switch"
+                                   style="transform: scale(2); transform-origin: left center; margin-right: 2.2em;"
+                                   {% if journey.is_hidden == 1 %} checked {% endif %} />
+                            <label class="form-check-label ms-2" for="hiddenSwitch">
+                                <span class="badge rounded-pill" id="hiddenBadge">
+                                    {% if journey.is_hidden == 1 %} On {% else %} Off {% endif %}
+                                </span>
+                            </label>
+                        </div>
+                        <div class="form-text pt-2">Hidden journeys if it is inappropriate or spam content. It will no longer appear on the public journey</div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Hidden field for actual status/hidden value -->
+                    <input type="hidden" id="status" name="status" value="{{ journey.status }}">
+                    <input type="hidden" id="hidden" name="is_hidden" value="{{ journey.is_hidden }}">
+                    
+                    <div class="d-flex justify-content-center py-4">
+                        <input type="submit" class="btn btn-primary btn-lg w-100" value="Submit">
                     </div>
                 </form>
             </div>
@@ -72,6 +95,7 @@
 
 <script>
 
+    // Status Switch
     // Get references to the switch, badge, and hidden status elements
     const statusSwitch = document.getElementById('statusSwitch');
     const statusBadge = document.getElementById('statusBadge');
@@ -98,6 +122,38 @@
             statusBadge.classList.add('bg-primary');
         } else {
             statusBadge.classList.add('bg-secondary');
+        }
+    });
+
+    // Hidden Switch
+    // Get references to the switch, badge, and hidden status elements
+    const hiddenSwitch = document.getElementById('hiddenSwitch');
+    const hiddenBadge = document.getElementById('hiddenBadge');
+    const hiddenHidden = document.getElementById('hidden');
+
+
+// Add event listener to update the badge and hidden value when the switch is toggled
+hiddenSwitch.addEventListener('change', function() {
+        if (this.checked) {
+            hiddenBadge.textContent = 'On';
+            hiddenBadge.classList.remove('bg-secondary');
+            hiddenBadge.classList.add('bg-on');
+            hiddenHidden.value = 1;
+        } else {
+            hiddenBadge.textContent = 'Off';
+            hiddenBadge.classList.remove('bg-on');
+            hiddenBadge.classList.add('bg-secondary');
+            hiddenHidden.value = 0;
+        }
+    });
+
+    // Initialize the badge styling based on current status
+    document.addEventListener('DOMContentLoaded', function() {
+        // hiddenHidden.value = hiddenSwitch.checked ? 1 : 0; 
+        if (hidden.value === '1') {
+            hiddenBadge.classList.add('bg-on');
+        } else {
+            hiddenBadge.classList.add('bg-secondary');
         }
     });
 </script>

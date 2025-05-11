@@ -62,9 +62,13 @@
                                 <!-- display journey status -->
                                 <div class="pb-2">
                                     {% if journey.status == 'public' %}
-                                    <h6><span class="badge rounded-pill bg-primary">Public</span></h6>
+                                    <span class="badge rounded-pill bg-primary">Public</span>
                                     {% elif journey.status == 'private' %}
-                                    <h6><span class="badge rounded-pill bg-secondary">Private</span></h6>
+                                    <span class="badge rounded-pill bg-secondary">Private</span>
+                                    {% endif %}
+
+                                    {% if journey.is_hidden == 1 %}
+                                    <span class="badge rounded-pill bg-warning text-dark">Hidden by Staff</span>
                                     {% endif %}
                                 </div>
 

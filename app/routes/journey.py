@@ -73,7 +73,7 @@ def add_journey():
 @login_required
 def edit_journey():
     user_id = session[constants.USER_ID]
-
+    user_role = session.get(constants.USER_ROLE)
 
     if request.method == constants.HTTP_METHOD_GET:
         journey_id = request.args.get(constants.JOURNEY_ID)
@@ -93,10 +93,10 @@ def edit_journey():
 
         # Retrieve and display journey details in the form if the user is the owner.
         with db.get_cursor() as cursor:
-            cursor.execute("SELECT title, description, start_date, status FROM journeys WHERE journey_id=%s;", (journey_id,))
+            cursor.execute("SELECT title, description, start_date, status, is_hidden FROM journeys WHERE journey_id=%s;", (journey_id,))
             journey = cursor.fetchone()
 
-        return render_template(constants.TEMPLATE_EDIT_JOURNEY, journey_id = journey_id, mode = mode, journey = journey)
+        return render_template(constants.TEMPLATE_EDIT_JOURNEY, journey_id = journey_id, mode = mode, journey = journey, user_role = user_role)
 
     elif request.method == constants.HTTP_METHOD_POST:
 
@@ -108,6 +108,7 @@ def edit_journey():
         description = request.form[constants.DESCRIPTION]
         start_date = request.form[constants.START_DATE]
         status = request.form[constants.STATUS]
+        is_hidden = request.form[constants.IS_HIDDEN]
         mode = request.form[constants.REQUEST_MODE]
 
         # Validate input data
@@ -119,18 +120,25 @@ def edit_journey():
             return render_template(constants.TEMPLATE_EDIT_JOURNEY,
                                    journey_id=journey_id,
                                    journey={'title': title, 'description': description, 'start_date': start_date,
-                                            'status': status})
+                                            'status': status, 'is_hidden': is_hidden},
+                                   user_role = user_role)
 
+        # When a journey is marked as hidden by ediotr/aadmin,
+        # its status will also be set to 'private'
+        if is_hidden == '1':
+            status = 'private'
+        
         # Update journey with validated data
         with db.get_cursor() as cursor:
             # Include status in the update if it was provided
             if status:
                 cursor.execute("""
                                       UPDATE journeys 
-                                      SET title=%s, description=%s, start_date=%s, status=%s 
+                                      SET title=%s, description=%s, start_date=%s, status=%s, is_hidden=%s 
                                       WHERE journey_id=%s;
                                       """,
-                               (title, description, start_date, status, journey_id))
+                               (title, description, start_date, status, is_hidden, journey_id))
+        
             else:
                 cursor.execute("""
                                       UPDATE journeys 
