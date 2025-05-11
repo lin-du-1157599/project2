@@ -20,12 +20,12 @@
                 <div class="mb-2">
                     {% if journey.status == 'public' %}
                     <span class="badge rounded-pill bg-primary">Public</span>
-                    {% elif journey.status == 'all' %}
+                    {% elif journey.status == 'private' %}
                     <span class="badge rounded-pill bg-secondary">Private</span>
                     {% endif %}
 
                     {% if journey.is_hidden == 1 %}
-                    <span class="badge rounded-pill bg-warning text-dark">Hidden</span>
+                    <span class="badge rounded-pill bg-warning text-dark">Hidden by staff</span>
                     {% endif %}
                 </div>
 
