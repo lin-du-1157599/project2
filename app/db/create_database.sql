@@ -16,6 +16,8 @@ DROP TABLE IF EXISTS event_comments;
 DROP TABLE IF EXISTS comment_reactions;
 DROP TABLE IF EXISTS private_messages;
 DROP TABLE IF EXISTS comment_reports;
+DROP TABLE IF EXISTS user_follows;
+DROP TABLE IF EXISTS departure_board_events;
 
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,6 +87,7 @@ CREATE TABLE user_subscriptions (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     was_admin_granted TINYINT NOT NULL DEFAULT 0,
+    status ENUM('active', 'expired') NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (subscription_id) REFERENCES subscriptions(subscription_id)
@@ -94,6 +97,7 @@ CREATE TABLE subscription_payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     billing_country VARCHAR(100) NOT NULL,
+    billing_address VARCHAR(100) NOT NULL,
     amount_paid DECIMAL(5,2) NOT NULL,
     gst_amount DECIMAL(5,2),
     currency VARCHAR(10) DEFAULT 'NZD',
