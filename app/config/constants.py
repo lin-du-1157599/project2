@@ -62,6 +62,9 @@ TEMPLATE_SIGN_UP = 'signup.html'
 TEMPLATE_PROFILE = 'profile.html'
 TEMPLATE_CHANGE_PASSWORD = 'change_password.html'
 TEMPLATE_AVATAR_PREVIEW = 'avatar_preview.html'
+TEMPLATE_RESTRICTED_USERS = 'restricted_users.html'
+
+# Journey templates
 TEMPLATE_MYJOURNEY = 'myjourney.html'
 TEMPLATE_ADD_JOURNEY = 'add_journey.html'
 TEMPLATE_EDIT_JOURNEY = 'edit_journey.html'
@@ -120,3 +123,7 @@ ANNOUNCEMENT_ID = 'announcement_id'
 TITLE = "title"
 CONTENT = 'content'
 CREATED_TIME = 'created_time'
+
+VIEW_TYPE_ALL = 'all'
+VIEW_TYPE_STAFF = 'staff'
+VIEW_TYPE_RESTRICTED = 'restricted'

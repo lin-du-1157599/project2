@@ -208,9 +208,20 @@
 							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'public_journeys' else '' }}" href="{{ url_for('public_journeys') }}">Explore</a></h4>
 						</li>
 
+						<!-- User Management -->
 						{% if session['role'] == 'admin' %}
-							<li class="nav-item p-2">
-								<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'all_users' else '' }}" href="{{ url_for('all_users') }}">Users</a></h4>
+							<li class="nav-item dropdown p-2">
+								<h4 class="fw-bold m-0">
+									<a class="nav-link dropdown-toggle{{ ' active' if active_page in ['all_users', 'staff_users', 'restricted_users'] else '' }}" href="#" id="userDropdownMenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+										Users
+									</a>
+
+									<ul class="dropdown-menu" aria-labelledby="userDropdownMenu">
+										<li><a class="dropdown-item" href="{{ url_for('all_users') }}">All User</a></li>
+										<li><a class="dropdown-item" href="{{ url_for('system_users') }}">Staff</a></li>
+										<li><a class="dropdown-item" href="{{ url_for('restricted_users') }}">Restricted</a></li>
+									</ul>
+								</h4>
 							</li>
 						{% endif %}
 						<!-- Announcement -->

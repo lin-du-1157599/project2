@@ -28,70 +28,98 @@ def admin_home():
      return render_template(constants.TEMPLATE_ADMIN_HOME)
 
 
-@app.route('/all_users')
+@app.route('/users')
 def all_users():
-     return users(all_users=True)
+     return users(view_type = constants.VIEW_TYPE_ALL)
 
 
-@app.route('/system_users')
+@app.route('/users/staff')
 def system_users():
-     return users()
+     return users(view_type = constants.VIEW_TYPE_STAFF)
+
+
+@app.route('/users/restricted')
+def restricted_users():     
+     return users(view_type = constants.VIEW_TYPE_RESTRICTED)
 
 
 @login_required
 @role_required(constants.USER_ROLE_ADMIN)
-def users(all_users=False):
-     sqlStr = "SELECT user_id, username, email, first_name, last_name, role, status FROM users WHERE role IN ('editor', 'admin') ORDER BY username, last_name, first_name;"
+def users(view_type = constants.VIEW_TYPE_ALL):
+    # Retrieve the selected fields from the users table
+    # and sort the result by username, last name, and first name
+    # for displaying user lists clearly across different queries.
+     select_fields = "user_id, username, email, first_name, last_name, role, shareable, status"
+     order_by = "ORDER BY username, last_name, first_name"
 
-     if all_users:
-          sqlStr = "SELECT user_id, username, email, first_name, last_name, role, status FROM users ORDER BY username, last_name, first_name;"
+     # Using if/else to determine which query to execute
+     # based on the selected user type
+     if view_type == constants.VIEW_TYPE_RESTRICTED:
+          sqlStr = f"SELECT {select_fields} FROM users WHERE shareable = 0 {order_by};"
+     elif view_type == constants.VIEW_TYPE_STAFF:
+          sqlStr = f"SELECT {select_fields} FROM users WHERE role IN ('editor', 'admin') {order_by};"
+     elif view_type == constants.VIEW_TYPE_ALL:
+          sqlStr = f"SELECT {select_fields} FROM users {order_by};"
 
      with db.get_cursor() as cursor:
           cursor.execute(sqlStr)
           userslist = cursor.fetchall()
-          return render_template(constants.TEMPLATE_USER, userslist=userslist, all_users=all_users)
+          return render_template(constants.TEMPLATE_USER, userslist = userslist, view_type = view_type)
+
 
 @app.route('/users/search_all_users', methods=[constants.HTTP_METHOD_GET])
 @role_required(constants.USER_ROLE_ADMIN)
 def search_all_users():
-    return search_users(all_users=True)
+    return search_users(view_type = constants.VIEW_TYPE_ALL)
 
-@app.route('/users/search_system_users', methods=[constants.HTTP_METHOD_GET])
+
+@app.route('/users/search_staff_users', methods=[constants.HTTP_METHOD_GET])
 @role_required(constants.USER_ROLE_ADMIN)
-def search_system_users():
-    return search_users()
+def search_staff_users():
+    return search_users(view_type = constants.VIEW_TYPE_STAFF)
 
-def search_users(all_users=False):
-    searchterm = request.args.get(constants.SEARCH_TERM)
-    sqlsearch = f'%{searchterm}%'
-    searchcat = request.args.get(constants.SEARCH_CATEGORY)
 
-    role_condition = "" if all_users else "AND role IN ('editor', 'admin')"
+@app.route('/users/search_restricted_users', methods=[constants.HTTP_METHOD_GET])
+@role_required(constants.USER_ROLE_ADMIN)
+def search_restricted_users():
+    return search_users(view_type = constants.VIEW_TYPE_RESTRICTED)
 
-    with db.get_cursor() as cursor:
-        if searchcat == constants.USERNAME:
+def search_users(view_type = constants.VIEW_TYPE_ALL):
+     searchterm = request.args.get(constants.SEARCH_TERM)
+     sqlsearch = f'%{searchterm}%'
+     searchcat = request.args.get(constants.SEARCH_CATEGORY)
+
+     if view_type == constants.VIEW_TYPE_RESTRICTED:
+          role_condition = "AND shareable = 0"
+     elif view_type == constants.VIEW_TYPE_STAFF:
+          role_condition = "AND role IN ('editor', 'admin')"
+     else:
+          role_condition = ""
+          
+     with db.get_cursor() as cursor:
+          if searchcat == constants.USERNAME:
             cursor.execute(
-                f"SELECT username, first_name, last_name, email, role, status, user_id FROM users WHERE username LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
+                f"SELECT username, first_name, last_name, email, role, shareable, status, user_id FROM users WHERE username LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
                 (sqlsearch,))
-        elif searchcat == constants.LAST_NAME:
+          elif searchcat == constants.LAST_NAME:
+               cursor.execute(
+                    f"SELECT username, first_name, last_name, email, role, shareable, status, user_id FROM users WHERE last_name LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
+                    (sqlsearch,))
+          elif searchcat == constants.FIRST_NAME:
             cursor.execute(
-                f"SELECT username, first_name, last_name, email, role, status, user_id FROM users WHERE last_name LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
+                f"SELECT username, first_name, last_name, email, role, shareable, status, user_id FROM users WHERE first_name LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
                 (sqlsearch,))
-        elif searchcat == constants.FIRST_NAME:
+          elif searchcat == constants.USER_FULL_NAME:
+               cursor.execute(
+                    f"SELECT username, first_name, last_name, email, role, shareable, status, user_id FROM users WHERE CONCAT(first_name, ' ', last_name) LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
+                    (sqlsearch,))
+          elif searchcat == constants.EMAIL:
             cursor.execute(
-                f"SELECT username, first_name, last_name, email, role, status, user_id FROM users WHERE first_name LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
-                (sqlsearch,))
-        elif searchcat == constants.USER_FULL_NAME:
-            cursor.execute(
-                f"SELECT username, first_name, last_name, email, role, status, user_id FROM users WHERE CONCAT(first_name, ' ', last_name) LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
-                (sqlsearch,))
-        elif searchcat == constants.EMAIL:
-            cursor.execute(
-                f"SELECT username, first_name, last_name, email, role, status, user_id FROM users WHERE email LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
+                f"SELECT username, first_name, last_name, email, role, shareable, status, user_id FROM users WHERE email LIKE %s {role_condition} ORDER BY username, last_name, first_name;",
                 (sqlsearch,))
 
-        userslist = cursor.fetchall()
-        return render_template(constants.TEMPLATE_USER, userslist=userslist, all_users=all_users, keyword=searchterm, searchType=searchcat)
+          userslist = cursor.fetchall()
+          return render_template(constants.TEMPLATE_USER, userslist=userslist, view_type=view_type, keyword=searchterm, searchType=searchcat)
 
 
 @app.route('/users/edit', methods=[constants.HTTP_METHOD_GET, constants.HTTP_METHOD_POST])
@@ -103,7 +131,7 @@ def edit_user():
 
           with db.get_cursor() as cursor:
                cursor.execute(
-                    "SELECT username, email, first_name, last_name, role, status, location, personal_description, profile_image FROM users WHERE user_id = %s;",
+                    "SELECT username, email, first_name, last_name, role, shareable, status, location, personal_description, profile_image FROM users WHERE user_id = %s;",
                     (user_id,))
                user = cursor.fetchone()
 
@@ -121,7 +149,7 @@ def edit_user():
 
           with db.get_cursor() as cursor:
                cursor.execute(
-                    "SELECT username, email, first_name, last_name, role, status FROM users WHERE user_id = %s;",
+                    "SELECT username, email, first_name, last_name, role, shareable, status FROM users WHERE user_id = %s;",
                     (user_id,))
                user = cursor.fetchone()
 
