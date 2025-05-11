@@ -9,6 +9,7 @@ from app.utils.validators import validate_journey
 from datetime import datetime
 import re, os
 from markupsafe import Markup
+from rapidfuzz import fuzz
 
 @app.route('/myjourney', methods=[constants.HTTP_METHOD_GET])
 @login_required
@@ -298,33 +299,63 @@ def view_journey(journey_id):
 @login_required
 def search_public_journey():
     keyword = request.args.get('keyword', '').strip()
+    searchcat = request.args.get(constants.SEARCH_CATEGORY)
+
     if not keyword:
         flash('Please enter a keyword to search.', constants.FLASH_MESSAGE_DANGER)
         return redirect(url_for('public_journeys'))
 
     query = f"%{keyword}%"
     with db.get_cursor() as cursor:
-        cursor.execute("""
-            SELECT j.journey_id, j.title, j.description, j.update_date, j.user_id,
-                   u.username, u.first_name, u.last_name
-            FROM journeys j
-            JOIN users u ON j.user_id = u.user_id
-            WHERE j.status = 'public' AND j.is_hidden = 0
-              AND (LOWER(j.title) LIKE LOWER(%s) OR LOWER(j.description) LIKE LOWER(%s))
-            ORDER BY j.update_date DESC
-        """, (query, query))
+        if searchcat == constants.JOURNEY_TEXT:
+            cursor.execute("""
+                SELECT j.journey_id, j.title, j.description, j.update_date, j.user_id,
+                       u.username, u.first_name, u.last_name
+                FROM journeys j
+                JOIN users u ON j.user_id = u.user_id
+                WHERE j.status = 'public' AND j.is_hidden = 0
+                AND (LOWER(j.title) LIKE LOWER(%s) OR LOWER(j.description) LIKE LOWER(%s))
+                ORDER BY j.update_date DESC
+            """, (query, query))
+        elif searchcat == constants.LOCATION:
+            cursor.execute("""
+                SELECT DISTINCT
+                           j.journey_id, j.title, j.description, j.update_date, j.user_id,
+                           u.username, u.first_name, u.last_name,
+                           MIN(e.location) AS location
+                FROM journeys j
+                JOIN users u ON j.user_id = u.user_id
+                JOIN events e ON j.journey_id = e.journey_id
+                WHERE j.status = 'public' AND j.is_hidden = 0
+                GROUP BY j.journey_id
+                ORDER BY j.update_date DESC""")
         search_results = cursor.fetchall()
 
     if not search_results:
         flash('No journeys found matching your search criteria.', constants.FLASH_MESSAGE_DANGER)
-        return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, keyword=keyword)
+        return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, keyword = keyword)
 
+    # Using if statement to check the search category.
+    # If the type is JOURNEY_TEXT, highlight the keywords
+    # to help users recognize them more esaily in the search results.
+    # Since the location details are not displayed on the journeys page,
+    # only the results are shown without highlighting.
     highlighted_results = []
-    for journey in search_results:
-        highlighted_title = re.sub(f"({re.escape(keyword)})", r'<mark>\1</mark>', journey['title'], flags=re.IGNORECASE)
-        highlighted_description = re.sub(f"({re.escape(keyword)})", r'<mark>\1</mark>', journey['description'], flags=re.IGNORECASE)
-        journey['title'] = Markup(highlighted_title)
-        journey['description'] = Markup(highlighted_description)
-        highlighted_results.append(journey)
+    if searchcat == constants.JOURNEY_TEXT:
+        for journey in search_results:
+            highlighted_title = re.sub(f"({re.escape(keyword)})", r'<mark>\1</mark>', journey['title'], flags=re.IGNORECASE)
+            highlighted_description = re.sub(f"({re.escape(keyword)})", r'<mark>\1</mark>', journey['description'], flags=re.IGNORECASE)
+            journey['title'] = Markup(highlighted_title)
+            journey['description'] = Markup(highlighted_description)
+            highlighted_results.append(journey)
+    else:
+        # Fuzzy search by event location. 
+        # Compare the input keyword from the user with
+        # each journey's location,both converted to lowercase.
+        # If the similarity score is greater that 80%,
+        # append the journey to the result list.
+        for journey in search_results:
+            if fuzz.partial_ratio(keyword.lower(), journey['location'].lower()) >= 80:
+                highlighted_results.append(journey)
 
-    return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, journeyList=highlighted_results, keyword=keyword)
+    return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, journeyList = highlighted_results, keyword = keyword, searchcat = searchcat)
