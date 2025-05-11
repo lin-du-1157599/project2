@@ -113,6 +113,8 @@ IS_HIDDEN = 'is_hidden'
 START_DATE = 'start_date'
 UPDATE_DATE = 'update_date'
 JOURNEY_STATUS_PRIVATE = 'private'
+JOURNEY_TEXT = 'journey_text' # including title & description
+
 
 REQUEST_MODE = 'mode'
 MODE_PUBLIC='public'
