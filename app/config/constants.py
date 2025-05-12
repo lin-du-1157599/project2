@@ -71,6 +71,7 @@ TEMPLATE_EDIT_JOURNEY = 'edit_journey.html'
 TEMPLATE_PUBLIC_JOURNEY = 'public_journeys.html'
 TEMPLATE_VIEW_JOURNEY = 'view_journey.html'
 TEMPLATE_DELETE_JOURNEY = 'delete_journey.html'
+TEMPLATE_HIDDEN_JOURNEY = 'hidden_journeys.html'
 
 # Event templates
 TEMPLATE_EVENTS = 'events.html'

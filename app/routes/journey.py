@@ -1,7 +1,7 @@
 from app import app
 from flask import redirect, render_template, request, session, url_for, flash
 from app.config import constants
-from app.utils.decorators import login_required
+from app.utils.decorators import login_required, login_and_role_required
 from app.utils.sidebar import user_profile_sidebar
 
 from app.db import db
@@ -367,3 +367,36 @@ def search_public_journey():
                 highlighted_results.append(journey)
 
     return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, journeyList = highlighted_results, keyword = keyword, searchcat = searchcat)
+
+@app.route('/journeys/hidden', methods=[constants.HTTP_METHOD_GET])
+@login_and_role_required([constants.USER_ROLE_EDITOR, constants.USER_ROLE_ADMIN])
+def hidden_journeys():
+    # Query to get all hidden journeys ordered by most recently updated
+    with db.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT j.journey_id, j.title, j.description, j.update_date, j.user_id,
+                   u.username, u.first_name, u.last_name 
+            FROM journeys j
+            JOIN users u ON j.user_id = u.user_id
+            WHERE j.is_hidden = 1
+            ORDER BY u.username, j.update_date DESC
+        """)
+        hiddenJourneys = cursor.fetchall()
+
+        # Grouped hidden journeys by username to ensure editor/admin can clearly 
+        # review all publicly-shared journeys that have been hidden for each user. 
+        
+        # Using for loop to retrieve hidden journey list from the database. 
+        # For each journey, check if username exists in the groupedJourneys dict. 
+        # If not, create a new list for that users. Then append the journey to 
+        # the corresponding list. Each username corresponds to a list of their hidden journeys.
+        groupedJourneys = {}
+
+        for journey in hiddenJourneys:
+            username = journey['username']
+            if username not in groupedJourneys:
+                groupedJourneys[username] = []
+            groupedJourneys[username].append(journey)
+
+        print('grouped_journeys: ',groupedJourneys)
+        return render_template(constants.TEMPLATE_HIDDEN_JOURNEY, groupedJourneys = groupedJourneys)
