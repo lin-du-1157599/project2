@@ -1,0 +1,116 @@
+{% extends "base/userbase.html" %}
+{% block title %}Hidden Journeys{% endblock %}
+
+{# Set the active page to be highlighted in the navigation bar. #}
+{% set active_page = 'hidden_journeys' %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const keywordInput = document.getElementById('keyword');
+        const cancelButton = document.getElementById('cancelSearch');
+
+        // Show the cancel button if there is content in the input field
+        if (keywordInput.value.trim() !== '') {
+            cancelButton.style.display = 'inline-block';
+        }
+
+        // Show the cancel button when typing in the input field
+        keywordInput.addEventListener('input', function() {
+            if (keywordInput.value.trim() !== '') {
+                cancelButton.style.display = 'inline-block';
+            } else {
+                cancelButton.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<div class="container px-5 pb-5">
+    <div class="row justify-content-center">
+
+        <!-- Public Journeys List -->
+        <div class="col-md-10 px-2">
+            <div class="p-5" style="background-color: #f0f0f0; border-radius: 40px;">
+                <!-- Public Journeys - Title -->
+                <div class="row">
+                    <div class="col mt-2 mb-5">
+                        <h1 class="fw-bold">Hidden Journeys</h1>
+                        <p class="fs-5">Review journeys that have been hidden from public view due to inappropriate or questionable content.</p>
+                    </div>
+                </div>
+                
+                {% if groupedJourneys and groupedJourneys|length > 0 %}
+                    {% for username, journeys in groupedJourneys.items() %}
+                    <div class="mb-4">
+
+                        <!-- Username and button -->
+                        <div class="d-flex justify-content-between align-items-center mb-4 px-4">
+                            <div>
+                                <h2 class="fw-bold m-0">{{ username }}</h2>
+                                <!-- <span class="text-muted m-0">{{ journeys[0].first_name }}{{ journeys[0].last_name }}</p>     -->
+                            </div>
+                            <a href="{{ url_for('edit_user', user_id=journeys[0].user_id) }}" class="btn btn-primary" style="width: 140px;">
+                                <i class="fas fa-user me-2"></i>View User
+                            </a>
+                        </div>
+
+                        <!-- Journey Details by the username -->
+                        <div class="row row-cols-1 row-cols-md-2 g-4 pb-5">
+                            {% for journey in journeys %}
+                            <div class="col"> 
+                                <div class="card border-0 rounded-5 h-100 p-4">
+
+                                    <div class="card-body">
+                                        <h2 class="card-title fw-bold m-0">{{ journey.title|safe }}</h2>
+
+                                        <!-- Author info -->
+                                        <h6 class="card-subtitle mb-2 pt-2" style="color: #a0a0a0;">
+                                            By:
+                                            {% if journey.first_name and journey.last_name %}
+                                                {{ journey.first_name }} {{ journey.last_name }} (@{{ journey.username }})
+                                            {% else %}
+                                                @{{ journey.username }}
+                                            {% endif %}
+                                        </h6>
+
+                                        <!-- Updated date -->
+                                        <h6 class="card-subtitle mb-3 pb-3" style="color: #a0a0a0;">
+                                            Updated: {{ journey.update_date.strftime('%d %b %Y') }}
+                                        </h6>
+
+                                        <p class="card-text">
+                                            {{ journey.description[:120]|safe }}
+                                            {% if journey.description|length > 120 %}...
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                            
+
+                                    <div class="card-footer bg-white border-0 rounded-5">
+                                        <div class="text-center py-2">
+                                            <a href="{{ url_for('view_journey', journey_id=journey.journey_id, mode='public') }}" class="btn btn-outline-primary btn-lg w-100">View Journey</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <hr style="padding-top: 1.4em;">
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-map-marked-alt fa-5x mb-4" style="color: #ccc;"></i>
+                    <h3 class="text-muted">No public journeys have been shared yet</h3>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
