@@ -79,7 +79,7 @@ def login():
             # Attempt to validate the login details against the database.
             with db.get_cursor() as cursor:
                 cursor.execute('''
-                            SELECT user_id, username, password_hash, role, status
+                            SELECT user_id, username, password_hash, role, status, subscription_status
                             FROM users
                             WHERE username = %s;
                             ''', (username,))
@@ -99,6 +99,7 @@ def login():
                         session[constants.USER_ID] = account[constants.USER_ID]
                         session[constants.USERNAME] = account[constants.USERNAME]
                         session[constants.USER_ROLE] = account[constants.USER_ROLE]
+                        session[constants.USER_SUBSCRIPTION_STATUS] = account[constants.USER_SUBSCRIPTION_STATUS]
 
                         return redirect(user_home_url())
                     else:

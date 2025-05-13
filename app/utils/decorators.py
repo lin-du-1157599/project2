@@ -20,6 +20,16 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def subscription_required(f):
+    """
+    Checks if the user has an active subscription. If not, redirects to the subscription page.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get(constants.USER_SUBSCRIPTION_STATUS) == constants.USER_SUBSCRIPTION_FREE:
+            return render_template(constants.TEMPLATE_ACCESS_DENIED), constants.HTTP_STATUS_CODE_403
+        return f(*args, **kwargs)
+    return decorated_function
 
 def role_required(required_role):
     """

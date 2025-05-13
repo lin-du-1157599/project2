@@ -232,6 +232,13 @@
 						<li class="nav-item p-2">
 							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'announcements_list' else '' }}" href="{{ url_for('announcements_list') }}">Announcements</a></h4>
 						</li>
+
+                        <!-- Departure Board -->
+                        {% if session['subscription_status'] != 'Free' %}
+                            <li class="nav-item p-2">
+                                <h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'departure_board' else '' }}" href="{{ url_for('departure_board') }}">Departure Board</a></h4>
+                            </li>
+                        {% endif %}
 					</ul>
                     <ul class="navbar-nav me-auto">
 					</ul>
