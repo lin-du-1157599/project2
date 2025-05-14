@@ -24,8 +24,8 @@ USER_STATUS='status'
 USER_PROFILE_IMAGE='profile_image'
 USER_FULL_NAME = 'full_name'
 USER_PERSONAL_DESCRIPTION='personal_description'
+USER_SUBSCRIPTION_STATUS = 'subscription_status'
 USER_SHAREABLE = 'shareable'
-
 
 DEFAULT_USER_ROLE = 'traveller'
 DEFAULT_STATUS = 'active'
@@ -33,6 +33,11 @@ DEFAULT_STATUS = 'active'
 # user status
 USER_STATUS_ACTIVE = 'active'
 USER_STATUS_BANNED = 'banned'
+
+# User subscription status
+USER_SUBSCRIPTION_FREE = 'Free'
+USER_SUBSCRIPTION_TRIAL = 'Trial'
+USER_SUBSCRIPTION_PREMIUM = 'Premium'
 
 IMAGE_UPLOAD_FOLDER = 'IMAGE_UPLOAD_FOLDER'
 IMAGE_UPLOAD_FOLDER_URL = 'static/uploads'
@@ -49,6 +54,7 @@ URL_PUBLIC_JOURNEY = 'public_journeys'
 URL_HOME = 'home'
 URL_ROOT = 'root'
 URL_ANNOUNCEMENTS = 'announcements_list'
+URL_DEPARTURE_BOARD = 'departure_board'
 
 # Template file names
 TEMPLATE_HOME = 'home.html'
@@ -62,7 +68,6 @@ TEMPLATE_USER_EDIT = 'user_edit.html'
 TEMPLATE_SIGN_UP = 'signup.html'
 TEMPLATE_PROFILE = 'profile.html'
 TEMPLATE_CHANGE_PASSWORD = 'change_password.html'
-TEMPLATE_AVATAR_PREVIEW = 'avatar_preview.html'
 TEMPLATE_RESTRICTED_USERS = 'restricted_users.html'
 
 # Journey templates
@@ -84,6 +89,9 @@ TEMPLATE_DELETE_EVENT = 'delete_event.html'
 TEMPLATE_ANNOUNCEMENTS = 'announcements.html'
 TEMPLATE_ADD_ANNOUNCEMENTS = 'add_announcement.html'
 TEMPLATE_VIEW_ANNOUNCEMENTS = 'view_announcement.html'
+
+# Departure Board templates
+TEMPLATE_DEPARTURE_BOARD = 'departure_board.html'
 
 # HTTP status codes
 # User permission-related issues

@@ -79,7 +79,7 @@ def login():
             # Attempt to validate the login details against the database.
             with db.get_cursor() as cursor:
                 cursor.execute('''
-                            SELECT user_id, username, password_hash, role, status
+                            SELECT user_id, username, password_hash, role, status, subscription_status, profile_image
                             FROM users
                             WHERE username = %s;
                             ''', (username,))
@@ -99,6 +99,8 @@ def login():
                         session[constants.USER_ID] = account[constants.USER_ID]
                         session[constants.USERNAME] = account[constants.USERNAME]
                         session[constants.USER_ROLE] = account[constants.USER_ROLE]
+                        session[constants.USER_SUBSCRIPTION_STATUS] = account[constants.USER_SUBSCRIPTION_STATUS]
+                        session[constants.USER_PROFILE_IMAGE] = account[constants.USER_PROFILE_IMAGE]
 
                         return redirect(user_home_url())
                     else:
@@ -434,29 +436,3 @@ def remove_image():
             cursor.execute("UPDATE users SET profile_image = NULL WHERE user_id = %s;", (user_id,))
 
     return redirect(url_for(constants.URL_PROFILE))
-
-
-@app.route('/profile/avatar/<username>')
-@login_required
-def preview_avatar(username):
-    """Preview avatar for a specific user based on the username."""
-
-    if username != session[constants.USERNAME] and session[constants.USER_ROLE] != constants.USER_ROLE_ADMIN:
-        return render_template(constants.TEMPLATE_AVATAR_PREVIEW, error='You do not have permission to view this user\'s avatar.'), constants.HTTP_STATUS_CODE_403
-
-    # Retrieve user profile from the database based on the username
-    try:
-        with db.get_cursor() as cursor:
-            cursor.execute('''
-                SELECT username, email, first_name as firstname, last_name as lastname, location, role, profile_image
-                FROM users
-                WHERE username = %s;
-            ''', (username,))
-            profile = cursor.fetchone()
-            if not profile or profile[constants.USER_PROFILE_IMAGE] is None:
-                return render_template(constants.TEMPLATE_AVATAR_PREVIEW, error='User not found or no profile image found.'), constants.HTTP_STATUS_CODE_404
-    except Exception as e:
-        app.logger.error(f"Error retrieving user details for {username}: {e}")
-        return render_template(constants.TEMPLATE_AVATAR_PREVIEW, error=str(e)), constants.HTTP_STATUS_CODE_500
-
-    return render_template(constants.TEMPLATE_AVATAR_PREVIEW, profile=profile)
