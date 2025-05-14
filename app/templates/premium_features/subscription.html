@@ -32,7 +32,7 @@
                         </div>
                     </div>
 
-                    {% if session['role'] not in ['admin', 'edit'] and session['is_trial'] == 0 %}
+                    {% if session['role'] not in ['admin', 'edit'] and session['is_trial_used'] == 0 %}
                         <a class="btn btn-outline-success mt-2">Start Free Trial</a>
                     {% endif %}
                 </div>
