@@ -20,6 +20,7 @@ app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'eve
 app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'journey'))
 app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'announcement'))
 app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'departure_board'))
+app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'premium_features'))
 
 # Set the "secret key" that our app will use to sign session cookies. This can
 # be anything.
@@ -49,4 +50,5 @@ from app.routes import event
 from app.routes import journey
 from app.routes import announcement
 from app.routes import departure_board
+from app.routes import premium_features
 from app.config import constants

@@ -25,6 +25,7 @@ USER_PROFILE_IMAGE='profile_image'
 USER_FULL_NAME = 'full_name'
 USER_PERSONAL_DESCRIPTION='personal_description'
 USER_SUBSCRIPTION_STATUS = 'subscription_status'
+USER_IS_TRIAL = 'is_trial'
 
 DEFAULT_USER_ROLE = 'traveller'
 DEFAULT_STATUS = 'active'

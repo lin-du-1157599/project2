@@ -100,6 +100,7 @@ def login():
                         session[constants.USERNAME] = account[constants.USERNAME]
                         session[constants.USER_ROLE] = account[constants.USER_ROLE]
                         session[constants.USER_SUBSCRIPTION_STATUS] = account[constants.USER_SUBSCRIPTION_STATUS]
+                        session[constants.USER_IS_TRIAL] = account[constants.USER_IS_TRIAL]
 
                         return redirect(user_home_url())
                     else:
@@ -375,6 +376,8 @@ def logout():
     session.pop(constants.USER_ID, None)
     session.pop(constants.USERNAME, None)
     session.pop(constants.USER_ROLE, None)
+    session.pop(constants.USER_SUBSCRIPTION_STATUS, None)
+    session.pop(constants.USER_IS_TRIAL, None)
 
     return redirect(url_for(constants.URL_ROOT))
 
