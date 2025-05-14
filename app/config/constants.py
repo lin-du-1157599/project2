@@ -25,6 +25,7 @@ USER_PROFILE_IMAGE='profile_image'
 USER_FULL_NAME = 'full_name'
 USER_PERSONAL_DESCRIPTION='personal_description'
 USER_SUBSCRIPTION_STATUS = 'subscription_status'
+USER_IS_TRIAL_USED = 'is_trial_used'
 USER_SHAREABLE = 'shareable'
 
 DEFAULT_USER_ROLE = 'traveller'
