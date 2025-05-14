@@ -34,8 +34,15 @@ def myjourney():
 def add_journey():
     user_id = session[constants.USER_ID]
 
+    # Retrieve if user are allowed to public shared journeys
+    with db.get_cursor() as cursor:
+        cursor.execute("SELECT shareable FROM users WHERE user_id = %s;", (user_id,))
+        shareableResult = cursor.fetchone()
+    
+    shareable = shareableResult['shareable']
+
     if request.method == constants.HTTP_METHOD_GET:
-        return render_template(constants.TEMPLATE_ADD_JOURNEY)
+        return render_template(constants.TEMPLATE_ADD_JOURNEY, shareable = shareable)
     print (request.form)
     
     title = request.form[constants.TITLE]
@@ -43,6 +50,10 @@ def add_journey():
     start_date = request.form[constants.START_DATE]
     status = request.form.get(constants.STATUS)
     if status is None:
+        status = constants.JOURNEY_STATUS_PRIVATE
+
+    # Restricted if the user are allowed to share journey
+    if shareable == 0:
         status = constants.JOURNEY_STATUS_PRIVATE
 
     # Validate journey data
@@ -56,7 +67,8 @@ def add_journey():
                                title=title,
                                description=description,
                                start_date=start_date,
-                               status=status)
+                               status=status,
+                               shareable=shareable)
 
 
     with db.get_cursor() as cursor:
@@ -84,8 +96,15 @@ def edit_journey():
         # to my journey page with error message. Ensure the
         # journey only visible edit page for the owner
         with db.get_cursor() as cursor:
-            cursor.execute("SELECT user_id FROM journeys WHERE journey_id=%s;", (journey_id,))
+            cursor.execute("""
+                SELECT j.user_id, u.shareable
+                FROM journeys j
+                JOIN users u ON j.user_id = u.user_id
+                WHERE journey_id = %s""",
+                (journey_id,))
             journey_owner = cursor.fetchone()
+            shareable = journey_owner['shareable']
+            print('journey_owner: ', journey_owner)
 
         if mode == (constants.MODE_ALL and user_id != journey_owner['user_id']) or (mode == constants.MODE_PUBLIC and session[constants.USER_ROLE]==constants.USER_ROLE_TRAVELLER):
             flash('You do not have permission to edit this journey.', constants.FLASH_MESSAGE_DANGER)
@@ -95,8 +114,9 @@ def edit_journey():
         with db.get_cursor() as cursor:
             cursor.execute("SELECT title, description, start_date, status, is_hidden FROM journeys WHERE journey_id=%s;", (journey_id,))
             journey = cursor.fetchone()
+            print('journey: ', journey)
 
-        return render_template(constants.TEMPLATE_EDIT_JOURNEY, journey_id = journey_id, mode = mode, journey = journey, user_role = user_role)
+        return render_template(constants.TEMPLATE_EDIT_JOURNEY, journey_id = journey_id, mode = mode, journey = journey, user_role = user_role, shareable = shareable)
 
     elif request.method == constants.HTTP_METHOD_POST:
 

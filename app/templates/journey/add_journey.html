@@ -5,7 +5,9 @@
 {% set active_page = 'myjourney' %}
 
 {% block content %}
-  
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 <div class="container d-flex justify-content-center px-5 pb-5">
 
     <div class="col-md-8 px-2">
@@ -43,12 +45,22 @@
                     <div class="mb-3">
                         <label class="fw-bold fs-5 py-2">Journey Visibility*</label>
                         <div class="form-check form-switch d-flex align-items-center">
-                            <input class="form-check-input mb-1 pe-4" type="checkbox" role="switch" id="statusSwitch" name="status" value="private" style="transform: scale(2); transform-origin: left center; margin-right: 2.2em;">
+                            <input class="form-check-input mb-1 pe-4" type="checkbox" role="switch" 
+                                   id="statusSwitch" name="status" value="private"
+                                   style="transform: scale(2); transform-origin: left center; margin-right: 2.2em;"
+                                   {% if shareable == 0 %} disabled {% endif %} />
                             <label class="form-check-label ms-2" for="statusSwitch">
                                 <span class="badge rounded-pill bg-secondary" id="statusBadge">Private</span>
                             </label>
                         </div>
+                        {% if shareable != 0 %}
                         <div class="form-text pt-2">Private journeys are only visible to you. Public journeys can be seen by all users.</div>
+                        {% else%}
+                        <div class="text-info p-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Public sharing is not allowed for your account due to a violation of our content policy. You can only create private journeys.
+                        </div>
+                        {% endif %}
                     </div>
 
                     <div class="d-flex justify-content-center gap-3 py-4">
