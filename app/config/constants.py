@@ -67,7 +67,6 @@ TEMPLATE_USER_EDIT = 'user_edit.html'
 TEMPLATE_SIGN_UP = 'signup.html'
 TEMPLATE_PROFILE = 'profile.html'
 TEMPLATE_CHANGE_PASSWORD = 'change_password.html'
-TEMPLATE_AVATAR_PREVIEW = 'avatar_preview.html'
 TEMPLATE_RESTRICTED_USERS = 'restricted_users.html'
 
 # Journey templates
