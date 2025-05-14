@@ -26,6 +26,7 @@ USER_FULL_NAME = 'full_name'
 USER_PERSONAL_DESCRIPTION='personal_description'
 USER_SUBSCRIPTION_STATUS = 'subscription_status'
 USER_IS_TRIAL_USED = 'is_trial_used'
+USER_SHAREABLE = 'shareable'
 
 DEFAULT_USER_ROLE = 'traveller'
 DEFAULT_STATUS = 'active'
@@ -68,7 +69,6 @@ TEMPLATE_USER_EDIT = 'user_edit.html'
 TEMPLATE_SIGN_UP = 'signup.html'
 TEMPLATE_PROFILE = 'profile.html'
 TEMPLATE_CHANGE_PASSWORD = 'change_password.html'
-TEMPLATE_AVATAR_PREVIEW = 'avatar_preview.html'
 TEMPLATE_RESTRICTED_USERS = 'restricted_users.html'
 
 # Journey templates
