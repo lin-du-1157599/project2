@@ -6,6 +6,8 @@
         {% set active_page = 'myjourney' %}
     {% endif %}
 {% block content %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   
 <div class="container d-flex justify-content-center px-5 pb-5">
 
@@ -49,7 +51,12 @@
                             <input class="form-check-input mb-1 pe-4" type="checkbox" role="switch"
                                    id="statusSwitch" name="status_switch"
                                    style="transform: scale(2); transform-origin: left center; margin-right: 2.2em;"
-                                   {% if (mode != 'all') or (journey.is_hidden == 1) %} disabled {% endif %}
+                                   
+                                   {% if (mode != 'all') 
+                                   or (journey.is_hidden == 1) 
+                                   or ((journey.status == 'private') and ( shareable == 0 )) %} disabled 
+                                   {% endif %}
+
                                    {% if journey.status == 'public' %} checked {% endif %} />
                             <label class="form-check-label ms-2" for="statusSwitch">
                                 <span class="badge rounded-pill" id="statusBadge">
@@ -57,7 +64,19 @@
                                 </span>
                             </label>
                         </div>
+                        {% if ( shareable == 0 ) and (journey.status == 'private') %}
+                        <div class="text-info p-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Public sharing is not allowed for your account due to a violation of our content policy. This journey cannot be made public.
+                        </div>
+                        {% elif ( shareable == 0 ) and (journey.status == 'public') %}
+                        <div class="text-info p-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Public sharing is not allowed for your account due to a violation of our content policy. Any journeys you previously shared will remain public. If an existing public journey is changed to private, it cannot be made public again.
+                        </div>
+                        {% else %}
                         <div class="form-text pt-2">Private journeys are only visible to you. Public journeys can be seen by all users.</div>
+                        {% endif %}
                     </div>
 
                     {% if user_role != 'traveller'%}

@@ -143,9 +143,10 @@ def edit_user():
           user_id = request.form.get(constants.USER_ID)
           role = request.form.get(constants.USER_ROLE)
           status = request.form.get(constants.USER_STATUS)
+          shareable = request.form.get(constants.USER_SHAREABLE)
 
           with db.get_cursor() as cursor:
-               cursor.execute("UPDATE users SET role=%s, status=%s WHERE user_id=%s;", (role, status, user_id,))
+               cursor.execute("UPDATE users SET role=%s, status=%s, shareable=%s WHERE user_id=%s;", (role, status, shareable, user_id,))
 
           with db.get_cursor() as cursor:
                cursor.execute(
@@ -163,8 +164,9 @@ def update_user_status():
      user_id = request.form.get(constants.USER_ID)
      user_new_role = request.form.get(constants.USER_ROLE)
      user_new_status = request.form.get(constants.USER_STATUS)
+     user_new_shareable = request.form.get(constants.USER_SHAREABLE)
 
      with db.get_cursor() as cursor:
-          cursor.execute("UPDATE users SET role=%s, status=%s WHERE user_id=%s;",
-                         (user_new_role, user_new_status, user_id,))
+          cursor.execute("UPDATE users SET role=%s, status=%s, shareable=%s WHERE user_id=%s;",
+                         (user_new_role, user_new_status, user_new_shareable, user_id,))
      return redirect(url_for('edit_user', user_id=user_id))
