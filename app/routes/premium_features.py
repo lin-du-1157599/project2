@@ -8,4 +8,4 @@ from app.db import db
 @app.route('/subscription')
 @login_required
 def subscription():
-    return render_template('subscription.html')
+    return render_template(constants.TEMPLATE_SUBSCRIPTION)
