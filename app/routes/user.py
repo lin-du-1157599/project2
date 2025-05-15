@@ -79,7 +79,7 @@ def login():
             # Attempt to validate the login details against the database.
             with db.get_cursor() as cursor:
                 cursor.execute('''
-                            SELECT user_id, username, password_hash, role, status, subscription_status, profile_image
+                            SELECT user_id, username, password_hash, role, status, subscription_status, profile_image, is_trial_used
                             FROM users
                             WHERE username = %s;
                             ''', (username,))
@@ -115,6 +115,7 @@ def login():
                     flash("Incorrect username or password", constants.FLASH_MESSAGE_DANGER)
                     return render_template(constants.TEMPLATE_LOGIN,username=username)
         except Exception as e:
+            print(e)
             flash("An error occurred while processing your request. Please try again", constants.FLASH_MESSAGE_DANGER)
 
             return render_template(constants.TEMPLATE_LOGIN), constants.HTTP_STATUS_CODE_500

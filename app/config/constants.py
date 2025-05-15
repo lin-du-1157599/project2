@@ -70,6 +70,7 @@ TEMPLATE_SIGN_UP = 'signup.html'
 TEMPLATE_PROFILE = 'profile.html'
 TEMPLATE_CHANGE_PASSWORD = 'change_password.html'
 TEMPLATE_RESTRICTED_USERS = 'restricted_users.html'
+TEMPLATE_SUBSCRIPTION = 'subscription.html'
 
 # Journey templates
 TEMPLATE_MYJOURNEY = 'myjourney.html'
