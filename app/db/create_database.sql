@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS achievement_leaderboard;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS locations;
 DROP TABLE IF EXISTS event_comments;
-DROP TABLE IF EXISTS comment_reactions;
+DROP TABLE IF EXISTS user_reactions;
 DROP TABLE IF EXISTS private_messages;
 DROP TABLE IF EXISTS comment_reports;
 DROP TABLE IF EXISTS user_follows;
