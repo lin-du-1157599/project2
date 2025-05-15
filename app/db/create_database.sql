@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS achievement_leaderboard;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS locations;
 DROP TABLE IF EXISTS event_comments;
-DROP TABLE IF EXISTS comment_reactions;
+DROP TABLE IF EXISTS user_reactions;
 DROP TABLE IF EXISTS private_messages;
 DROP TABLE IF EXISTS comment_reports;
 DROP TABLE IF EXISTS user_follows;
@@ -182,14 +182,14 @@ CREATE TABLE event_comments (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE comment_reactions (
+CREATE TABLE user_reactions (
     reaction_id INT AUTO_INCREMENT PRIMARY KEY,
-    comment_id INT NOT NULL,
+    target_type ENUM('comment', 'event') NOT NULL,
+    target_id INT NOT NULL,
     user_id INT NOT NULL,
     reaction_type ENUM('like', 'dislike') NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(comment_id, user_id), -- 一个用户对同一评论只能点赞或点踩一次
-    FOREIGN KEY (comment_id) REFERENCES event_comments(comment_id) ON DELETE CASCADE,
+    UNIQUE(target_type, target_id, user_id), -- 一个用户对同一评论只能点赞或点踩一次
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
