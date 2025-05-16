@@ -33,7 +33,7 @@
                     </div>
 
                     {% if session['role'] not in ['admin', 'edit'] and session['is_trial_used'] == 0 %}
-                        <a class="btn btn-outline-success mt-2">Start Free Trial</a>
+                        <a href="{{ url_for('start_trial') }}" class="btn btn-outline-success mt-2">Start Free Trial</a>
                     {% endif %}
                 </div>
             </div>

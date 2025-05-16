@@ -40,6 +40,12 @@ USER_SUBSCRIPTION_FREE = 'Free'
 USER_SUBSCRIPTION_TRIAL = 'Trial'
 USER_SUBSCRIPTION_PREMIUM = 'Premium'
 
+# Indicates the user has not used the free trial yet
+USER_IS_TRIAL_USED_NO = 0
+# Indicates the user has already used the free trial
+USER_IS_TRIAL_USED_YES = 1
+
+
 IMAGE_UPLOAD_FOLDER = 'IMAGE_UPLOAD_FOLDER'
 IMAGE_UPLOAD_FOLDER_URL = 'static/uploads'
 
@@ -56,6 +62,7 @@ URL_HOME = 'home'
 URL_ROOT = 'root'
 URL_ANNOUNCEMENTS = 'announcements_list'
 URL_DEPARTURE_BOARD = 'departure_board'
+URL_SUBSCRIPTION = 'subscription'
 
 # Template file names
 TEMPLATE_HOME = 'home.html'
@@ -141,3 +148,8 @@ CREATED_TIME = 'created_time'
 VIEW_TYPE_ALL = 'all'
 VIEW_TYPE_STAFF = 'staff'
 VIEW_TYPE_RESTRICTED = 'restricted'
+
+#subscriptions information fields
+SUBSCRIPTION_ID = 'subscription_id'
+
+SUBSCRIPTIONS_NAME_FREE_TRIAL = 'Free Trial'
