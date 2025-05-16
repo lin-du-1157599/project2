@@ -246,7 +246,7 @@ def profile():
         # Retrieve user profile from the database.
         with db.get_cursor() as cursor:
             cursor.execute(
-                "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description FROM users WHERE user_id = %s;",
+                "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description, subscription_status FROM users WHERE user_id = %s;",
                 (session[constants.USER_ID],))
             profile = cursor.fetchone()
             return render_template(constants.TEMPLATE_PROFILE, profile=profile)
@@ -291,7 +291,7 @@ def profile():
             # retrieve new profile details again
             with db.get_cursor() as cursor:
                 cursor.execute(
-                    "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description FROM users WHERE user_id = %s;",
+                    "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description, subscription_status FROM users WHERE user_id = %s;",
                     (session[constants.USER_ID],))
                 profile = cursor.fetchone()
 
