@@ -5,7 +5,7 @@ from app.config.constants import DEFAULT_USER_ROLE, DEFAULT_STATUS
 from app.utils.decorators import if_logged_in_redirect, login_required
 from app.db import db
 from flask_bcrypt import Bcrypt
-from app.utils.helpers import allowed_file
+from app.utils.helpers import allowed_file, get_image_extension
 from werkzeug.utils import secure_filename
 import re, os
 from app.utils.validators import validate_firstname, validate_lastname, validate_email, validate_password, \
@@ -405,8 +405,9 @@ def upload_image():
 
             return render_template(constants.TEMPLATE_PROFILE, user_id = user_id, profile = profile, image_error = image_error)
 
-        # retrieve the file name
-        profile_image_name = secure_filename(profile_image.filename)
+        file_type = get_image_extension(profile_image.mimetype)
+
+        profile_image_name = f"avatar_{user_id}.{file_type}"
 
         # save image to the folder
         profile_image_path = os.path.join(app.config[constants.IMAGE_UPLOAD_FOLDER], profile_image_name)
@@ -414,6 +415,8 @@ def upload_image():
 
         with db.get_cursor() as cursor:
             cursor.execute("UPDATE users SET profile_image=%s WHERE user_id = %s;",(profile_image_name, user_id))
+            session[constants.USER_PROFILE_IMAGE] = profile_image_name
+
         return redirect(url_for(constants.URL_PROFILE))
 
     return render_template(constants.TEMPLATE_PROFILE, user_id = user_id)
