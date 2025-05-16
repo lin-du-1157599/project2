@@ -55,7 +55,9 @@
 
                 <div class="text-center align-items-center mt-4 pt-4">
                     <h3 class="fw-bold">{{ profile.first_name }} {{ profile.last_name }}</h3>
-                    <h4 style="color: #646464">@{{ profile.username }}</h4>
+                    <h4 style="color: #646464">@{{ profile.username }}
+                        <span class="badge bg-secondary ms-2">{{ profile.subscription_status | capitalize }}</span>
+                    </h4>
                     
                     <!-- Add subscription button here -->
                     <div class="mt-3">
