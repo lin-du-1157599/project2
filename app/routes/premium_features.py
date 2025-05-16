@@ -58,3 +58,21 @@ def start_trial():
         print("Error:", e)
 
     return redirect(url_for(constants.URL_SUBSCRIPTION))
+
+@app.route('/payment/<int:subscription_id>')
+@login_and_role_required([constants.USER_ROLE_TRAVELLER])
+def payment_page(subscription_id):
+    with db.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT * FROM subscriptions WHERE subscription_id = %s 
+        """, (subscription_id,))
+        subscription = cursor.fetchone()
+    if not subscription:
+        flash("Subscription plan not found.", constants.FLASH_MESSAGE_DANGER)
+        return redirect(url_for(constants.URL_SUBSCRIPTION))
+    return render_template(constants.TEMPLATE_PAYMENT, subscription=subscription)
+
+@app.route('/process_payment', methods=[constants.HTTP_METHOD_POST])
+@login_and_role_required([constants.USER_ROLE_TRAVELLER])
+def process_payment():
+    print('payment')

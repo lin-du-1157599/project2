@@ -178,7 +178,7 @@ CREATE TABLE event_comments (
     user_id INT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_hidden TINYINT NOT NULL DEFAULT 0,  -- 是否被隐藏（0 = 显示，1 = 隐藏）
+    is_hidden TINYINT NOT NULL DEFAULT 0,
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
@@ -190,7 +190,7 @@ CREATE TABLE user_reactions (
     user_id INT NOT NULL,
     reaction_type ENUM('like', 'dislike') NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(target_type, target_id, user_id), -- 一个用户对同一评论只能点赞或点踩一次
+    UNIQUE(target_type, target_id, user_id), -- A user can only like or dislike the same comment once.
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
@@ -220,12 +220,12 @@ CREATE TABLE comment_reports (
 
 CREATE TABLE user_follows (
     user_follow_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,  -- 关注者用户ID
-    followed_id INT NOT NULL,  -- 被关注的ID（可能是旅程、用户或地点）
-    follow_type ENUM('journey', 'user', 'location') NOT NULL,  -- 关注的类型：旅程、用户、地点
-    followed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 关注时间
+    user_id INT NOT NULL,
+    followed_id INT NOT NULL,  -- The followed ID (which could be a journey, user, or location)
+    follow_type ENUM('journey', 'user', 'location') NOT NULL,
+    followed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    -- 使用联合唯一键确保每个用户对每个对象（旅程、用户、地点）的关注只有一条记录
+    -- Use a composite unique key to ensure that each user has only one follow record for each object (journey, user, or location).
     UNIQUE(user_id, followed_id, follow_type)  
 );
 
