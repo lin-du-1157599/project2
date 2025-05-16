@@ -233,9 +233,9 @@ INSERT INTO subscriptions (
     name, duration_months, is_free_trial, discount_percent, price_nzd_excl_gst, price_nzd_incl_gst, is_admin_grantable
 ) VALUES
     ('Free Trial', 1, 1, 100.00, 0.00, 0.00, 0),
-    ('One Month', 1, 0, 0.00, 5.00, 5.75, 0),
+    ('One Month', 1, 0, 0.00, 5.22, 6.00, 0),
     ('One Quarter', 3, 0, 10.00, 14.09, 16.20, 0),
-    ('One Year', 12, 0, 25.00, 45.00, 51.75, 0),
+    ('One Year', 12, 0, 25.00, 46.96, 54.00, 0),
     ('Admin Gift One Month', 1, 0, 100.00, 0.00, 0.00, 1),
     ('Admin Gift One Quarter', 3, 0, 100.00, 0.00, 0.00, 1),
     ('Admin Gift One Year', 12, 0, 100.00, 0.00, 0.00, 1);

@@ -10,7 +10,12 @@ from app.db import db
 @app.route('/subscription')
 @login_required
 def subscription():
-    return render_template(constants.TEMPLATE_SUBSCRIPTION)
+    with db.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT * FROM subscriptions WHERE is_admin_grantable = %s 
+        """, (constants.USER_IS_ADMIN_GRANTABLE_NO,))
+        subscriptions = cursor.fetchall()
+    return render_template(constants.TEMPLATE_SUBSCRIPTION, subscriptions=subscriptions)
 
 @app.route('/start_trial')
 @login_and_role_required([constants.USER_ROLE_TRAVELLER])

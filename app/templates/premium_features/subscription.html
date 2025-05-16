@@ -14,106 +14,58 @@
     <h2 class="text-center mb-4">Choose Your Subscription Plan</h2>
     
     <div class="row row-cols-1 row-cols-md-4 g-4">
-        <!-- Free Trial Plan -->
-        <div class="col">
-            <div class="card h-100 shadow border-primary">
-                <div class="card-body text-center">
-                    <h4 class="card-title text-info fw-bold">Free Trial</h4>
-                    <p class="card-text">Enjoy premium features for 1 month, absolutely free!</p>
-
-                    <div class="price-box d-flex justify-content-center align-items-baseline gap-4 mt-3 mb-2">
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Incl. GST</p>
-                            <p class="fs-4 fw-bold text-dark">NZ $0.00</p>
+        {% for sub in subscriptions %}
+            <div class="col">
+                <div class="card h-100 shadow {% if sub.is_free_trial == 1 %}border-primary{% endif %}">
+                    <div class="card-body text-center">
+                        <h4 class="card-title fw-bold text-capitalize 
+                            {% if sub.is_free_trial == 1 %}
+                                text-info
+                            {% elif sub.duration_months == 1 %}
+                                text-primary
+                            {% elif sub.duration_months == 3 %}
+                                text-success
+                            {% elif sub.duration_months == 12 %}
+                                text-warning
+                            {% endif %}
+                        ">
+                            {{ sub.name }}
+                        </h4>
+    
+                        <p class="card-text">
+                            {% if sub.is_free_trial == 1 %}
+                                Enjoy premium features for {{ sub.duration_months }} month{{ 's' if sub.duration_months > 1 else '' }}, absolutely free!
+                            {% else %}
+                                Access premium features for {{ sub.duration_months }} month{{ 's' if sub.duration_months > 1 else '' }}.
+                                {% if sub.discount_percent and sub.discount_percent > 0 %}
+                                    <br>{{ sub.duration_months }} months with {{ sub.discount_percent }}% discount.
+                                {% endif %}
+                            {% endif %}
+                        </p>
+    
+                        <div class="price-box d-flex justify-content-center align-items-baseline gap-4 mt-3 mb-2">
+                            <div>
+                                <p class="mb-1 fw-semibold text-muted small text-uppercase">Incl. GST</p>
+                                <p class="fs-4 fw-bold text-dark">NZ ${{ '%.2f'|format(sub.price_nzd_incl_gst) }}</p>
+                            </div>
+                            <div>
+                                <p class="mb-1 fw-semibold text-muted small text-uppercase">Excl. GST</p>
+                                <p class="fs-5 fw-semibold text-secondary">NZ ${{ '%.2f'|format(sub.price_nzd_excl_gst) }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Excl. GST</p>
-                            <p class="fs-5 fw-semibold text-secondary">NZ $0.00</p>
-                        </div>
+    
+                        {% if session['role'] not in ['admin', 'edit'] %}
+                            {% if sub.is_free_trial == 1 and session['is_trial_used'] == 0 %}
+                                <a href="{{ url_for('start_trial') }}" class="btn btn-outline-success mt-2">Start Free Trial</a>
+                            {% elif sub.is_free_trial == 0 %}
+                                <a href="#" class="btn btn-outline-primary mt-2">Subscribe Now</a>
+                            {% endif %}
+                        {% endif %}
                     </div>
-
-                    {% if session['role'] not in ['admin', 'edit'] and session['is_trial_used'] == 0 %}
-                        <a href="{{ url_for('start_trial') }}" class="btn btn-outline-success mt-2">Start Free Trial</a>
-                    {% endif %}
                 </div>
             </div>
-        </div>
-
-        <!-- One Month Plan -->
-        <div class="col">
-            <div class="card h-100 shadow">
-                <div class="card-body text-center">
-                    <h4 class="card-title text-primary fw-bold">One Month</h4>
-                    <p class="card-text">Access premium features for 1 month.</p>
-
-                    <div class="price-box d-flex justify-content-center align-items-baseline gap-4 mt-3 mb-2">
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Incl. GST</p>
-                            <p class="fs-4 fw-bold text-dark">NZ $6.00</p>
-                        </div>
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Excl. GST</p>
-                            <p class="fs-5 fw-semibold text-secondary">NZ $5.22</p>
-                        </div>
-                    </div>
-
-                    {% if session['role'] not in ['admin', 'edit'] %}
-                        <a class="btn btn-outline-primary mt-2">Subscribe Now</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- One Quarter Plan -->
-        <div class="col">
-            <div class="card h-100 shadow">
-                <div class="card-body text-center">
-                    <h4 class="card-title text-success fw-bold">One Quarter</h4>
-                    <p class="card-text">3 months with 10% discount.</p>
-
-                    <div class="price-box d-flex justify-content-center align-items-baseline gap-4 mt-3 mb-2">
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Incl. GST</p>
-                            <p class="fs-4 fw-bold text-dark">NZ $16.20</p>
-                        </div>
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Excl. GST</p>
-                            <p class="fs-5 fw-semibold text-secondary">NZ $14.09</p>
-                        </div>
-                    </div>
-
-                    {% if session['role'] not in ['admin', 'edit'] %}
-                        <a class="btn btn-outline-success mt-2">Subscribe Now</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- One Year Plan -->
-        <div class="col">
-            <div class="card h-100 shadow">
-                <div class="card-body text-center">
-                    <h4 class="card-title text-warning fw-bold">One Year</h4>
-                    <p class="card-text">12 months with 25% discount.</p>
-
-                    <div class="price-box d-flex justify-content-center align-items-baseline gap-4 mt-3 mb-2">
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Incl. GST</p>
-                            <p class="fs-4 fw-bold text-dark">NZ $54.00</p>
-                        </div>
-                        <div>
-                            <p class="mb-1 fw-semibold text-muted small text-uppercase">Excl. GST</p>
-                            <p class="fs-5 fw-semibold text-secondary">NZ $46.96</p>
-                        </div>
-                    </div>
-
-                    {% if session['role'] not in ['admin', 'edit'] %}
-                        <a class="btn btn-outline-warning mt-2">Subscribe Now</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+        {% endfor %}
+    </div>    
 
     <!-- Free trial note -->
     <div class="mt-5 text-center text-muted">

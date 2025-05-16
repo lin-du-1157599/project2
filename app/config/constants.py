@@ -40,6 +40,9 @@ USER_SUBSCRIPTION_FREE = 'Free'
 USER_SUBSCRIPTION_TRIAL = 'Trial'
 USER_SUBSCRIPTION_PREMIUM = 'Premium'
 
+USER_IS_ADMIN_GRANTABLE_NO = 0
+USER_IS_ADMIN_GRANTABLE_YES = 1
+
 # Indicates the user has not used the free trial yet
 USER_IS_TRIAL_USED_NO = 0
 # Indicates the user has already used the free trial
