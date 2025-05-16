@@ -85,6 +85,7 @@ CREATE TABLE user_subscriptions (
     user_id INT NOT NULL,
     subscription_id INT NOT NULL,
     start_date DATE NOT NULL,
+    remaining_months INT NOT NULL DEFAULT 0,
     end_date DATE NOT NULL,
     was_admin_granted TINYINT NOT NULL DEFAULT 0,
     status ENUM('active', 'expired') NOT NULL DEFAULT 'active',
