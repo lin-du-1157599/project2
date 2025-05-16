@@ -262,9 +262,19 @@
                             </a>
 						</li>
 						<li class="nav-item d-flex align-items-center">
-							<a class="nav-link ms-2" href="{{ url_for('logout') }}">
-                                <i class="fas fa-sign-out-alt fa-2x" style="color: #ccc;"></i>
-                            </a>
+                            <button style="border:none; background:none; padding:0;"
+                              onclick="showAlertModal('logoutModal', 'Confirm Logout', 'Warning', 'Are you sure to logout?', function(e) {
+                                e.preventDefault();
+                                const modalEl = document.getElementById('logoutModal');
+                                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                                if (modalInstance) {
+                                  modalInstance.hide();
+                                }
+                                window.location.href = '{{ url_for('logout') }}';
+                              })">
+                              <i class="fas fa-sign-out-alt fa-2x" style="color:#ccc;"></i>
+                            </button>
+
 						</li>
 					</ul>
 				</div>
@@ -291,6 +301,8 @@
 		<main>
 			{% block content %}{% endblock %}
 		</main>
+
+    {% include 'components/modal.html' %}
+
 	</body>
-	
 </html>
