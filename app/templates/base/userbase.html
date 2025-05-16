@@ -262,7 +262,7 @@
                             </a>
 						</li>
 						<li class="nav-item d-flex align-items-center">
-                            <button style="border:none; background:none; padding:0;"
+                            <button style="border:none; background:none; padding:0; margin-left: 15px"
                               onclick="showAlertModal('logoutModal', 'Confirm Logout', 'Warning', 'Are you sure to logout?', function(e) {
                                 e.preventDefault();
                                 const modalEl = document.getElementById('logoutModal');
@@ -274,7 +274,6 @@
                               })">
                               <i class="fas fa-sign-out-alt fa-2x" style="color:#ccc;"></i>
                             </button>
-
 						</li>
 					</ul>
 				</div>
@@ -302,7 +301,8 @@
 			{% block content %}{% endblock %}
 		</main>
 
-    {% include 'components/modal.html' %}
+        {% set modal_id = 'logoutModal' %}
+        {% include 'components/modal.html' %}
 
 	</body>
 </html>

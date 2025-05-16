@@ -91,9 +91,21 @@
                         <!-- Follow -->
                         {% if user_id != journey.user_id %}
                             {% if journey.is_following %}
-                                <form action="{{ url_for('unfollow_journey', journey_id=journey.journey_id, mode=mode) }}" method="post" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" title="Unfollow Journey">Unfollow</button>
-                                </form>
+                                <button class="btn btn-sm btn-danger"
+                                        onclick="showAlertModal('unfollowModal', 'Confirm Unfollow', 'Warning',
+                                        'Are you sure you want to unfollow?<br>After unfollowing, related events will no longer appear on your Departure Board.',
+                                        function(e) {
+                                            e.preventDefault();
+                                            const modalEl = document.getElementById('unfollowModal');
+                                            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                                            if (modalInstance) {
+                                              modalInstance.hide();
+                                            }
+                                            window.location.href = '{{ url_for('unfollow_journey', journey_id=journey.journey_id, mode=mode) }}';
+                                        })">
+                                  Unfollow
+                                </button>
+
                             {% else %}
                                 <form action="{{ url_for('follow_journey', journey_id=journey.journey_id, mode=mode) }}" method="post" style="display:inline;">
                                     <button type="submit" class="btn btn-sm btn-primary" title="Follow Journey">Follow</button>
@@ -404,6 +416,8 @@
     </div>
 </div>
 
+{% set modal_id = 'unfollowModal' %}
+{% include 'components/modal.html' %}
 
 <script>
     // Initialize lightbox functionality for event photos

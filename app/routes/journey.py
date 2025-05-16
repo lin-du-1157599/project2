@@ -465,7 +465,7 @@ def follow_journey(journey_id):
         return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
 
 
-@app.route('/journey/<int:journey_id>/unfollow', methods=[constants.HTTP_METHOD_POST])
+@app.route('/journey/<int:journey_id>/unfollow', methods=[constants.HTTP_METHOD_GET])
 @subscription_required
 @login_required
 def unfollow_journey(journey_id):
