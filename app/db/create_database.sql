@@ -239,7 +239,7 @@ ALTER TABLE users MODIFY role ENUM('traveller', 'editor', 'admin', 'moderator') 
 
 ALTER TABLE users 
     ADD COLUMN subscription_status ENUM('Free', 'Trial', 'Premium') NOT NULL DEFAULT 'Free',
-    ADD COLUMN is_public_profile TINYINT NOT NULL DEFAULT 0;
+    ADD COLUMN is_public_profile TINYINT NOT NULL DEFAULT 0,
     ADD COLUMN is_trial_used TINYINT NOT NULL DEFAULT 0;
 
 ALTER TABLE announcements
