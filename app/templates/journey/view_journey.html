@@ -781,9 +781,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="comment mb-3">
                             <div class="d-flex justify-content-between">
                                 <strong>${comment.username}</strong>
-                                <small class="text-muted">
-                                    ${new Date(comment.created_at).toLocaleString()}
-                                </small>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">
+                                        ${new Date(comment.created_at).toLocaleString()}
+                                    </small>
+                                    {% if session.get('loggedin') %}
+                                    <button class="btn btn-sm btn-link text-muted report-comment" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#reportCommentModal"
+                                            data-comment-id="${comment.id}"
+                                            data-comment-content="${comment.content}"
+                                            data-comment-author="${comment.username}">
+                                        <i class="fas fa-flag"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </div>
                             <p class="mb-1">${comment.content}</p>
                             <div class="d-flex gap-2 mt-2">
@@ -815,6 +827,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize reaction buttons
     function initializeReactionButtons() {
+        // Remove existing event listeners first
+        document.querySelectorAll('.btn-reaction').forEach(button => {
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+        });
+
         document.querySelectorAll('.btn-reaction').forEach(button => {
             const targetType = button.dataset.targetType;
             const targetId = button.dataset.targetId;
@@ -838,7 +856,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Add click event listener
-            button.addEventListener('click', function() {
+            // Modify the reaction button click handler inside initializeReactionButtons()
+            button.addEventListener('click', function (e) {
+                e.preventDefault(); // Prevent event bubbling
                 if (!isAuthenticated) {
                     window.location.href = '/login';
                     return;
@@ -855,37 +875,49 @@ document.addEventListener('DOMContentLoaded', function() {
                         reaction_type: reactionType
                     })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update count
-                        countSpan.textContent = data.count;
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update count for current reaction
+                            countSpan.textContent = data.count;
 
-                        // Toggle icon
-                        if (data.is_active) {
-                            icon.classList.remove('far');
-                            icon.classList.add('fas');
-                            icon.classList.add('text-primary');
-                        } else {
-                            icon.classList.remove('fas');
-                            icon.classList.remove('text-primary');
-                            icon.classList.add('far');
-                        }
+                            // Toggle icon for current reaction
+                            if (data.is_active) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                                icon.classList.add('text-primary');
 
-                        // If this is a like, remove dislike and vice versa
-                        const oppositeType = reactionType === 'like' ? 'dislike' : 'like';
-                        const oppositeButton = document.querySelector(
-                            `.btn-reaction[data-target-type="${targetType}"][data-target-id="${targetId}"][data-reaction-type="${oppositeType}"]`
-                        );
-                        if (oppositeButton) {
-                            const oppositeIcon = oppositeButton.querySelector('i');
-                            oppositeIcon.classList.remove('fas');
-                            oppositeIcon.classList.remove('text-primary');
-                            oppositeIcon.classList.add('far');
+                                // If activated this reaction, deactivate the opposite reaction
+                                const oppositeType = reactionType === 'like' ? 'dislike' : 'like';
+                                const oppositeButton = document.querySelector(
+                                    `.btn-reaction[data-target-type="${targetType}"][data-target-id="${targetId}"][data-reaction-type="${oppositeType}"]`
+                                );
+
+                                if (oppositeButton) {
+                                    // Update opposite button visual state
+                                    const oppositeIcon = oppositeButton.querySelector('i');
+                                    oppositeIcon.classList.remove('fas');
+                                    oppositeIcon.classList.remove('text-primary');
+                                    oppositeIcon.classList.add('far');
+
+                                    // Fetch and update the opposite reaction count
+                                    fetch(`/api/reaction/status?target_type=${targetType}&target_id=${targetId}&reaction_type=${oppositeType}`)
+                                        .then(response => response.json())
+                                        .then(oppData => {
+                                            if (oppData.success) {
+                                                const oppositeCountSpan = oppositeButton.querySelector(`.${oppositeType}-count`);
+                                                oppositeCountSpan.textContent = oppData.count;
+                                            }
+                                        });
+                                }
+                            } else {
+                                icon.classList.remove('fas');
+                                icon.classList.remove('text-primary');
+                                icon.classList.add('far');
+                            }
                         }
-                    }
-                })
-                .catch(error => console.error('Error toggling reaction:', error));
+                    })
+                    .catch(error => console.error('Error toggling reaction:', error));
             });
         });
     }
@@ -953,6 +985,114 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Add Report Comment Modal
+    document.body.insertAdjacentHTML('beforeend', `
+    <div class="modal fade" id="reportCommentModal" tabindex="-1" aria-labelledby="reportCommentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportCommentModalLabel">Report Comment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Reporting comment by <span id="reportedCommentAuthor"></span>:</p>
+                    <p class="text-muted" id="reportedCommentContent"></p>
+                    <form id="reportCommentForm">
+                        <input type="hidden" id="reportedCommentId">
+                        <div class="mb-3">
+                            <label class="form-label">Reason for reporting:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportReason" id="reasonAbusive" value="abusive" required>
+                                <label class="form-check-label" for="reasonAbusive">
+                                    Abusive
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportReason" id="reasonOffensive" value="offensive" required>
+                                <label class="form-check-label" for="reasonOffensive">
+                                    Offensive
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reportReason" id="reasonSpam" value="spam" required>
+                                <label class="form-check-label" for="reasonSpam">
+                                    Spam
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitReport">Submit Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `);
+
+    // Initialize report modal
+    const reportCommentModal = document.getElementById('reportCommentModal');
+    if (reportCommentModal) {
+        reportCommentModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const commentId = button.getAttribute('data-comment-id');
+            const commentContent = button.getAttribute('data-comment-content');
+            const commentAuthor = button.getAttribute('data-comment-author');
+
+            document.getElementById('reportedCommentId').value = commentId;
+            document.getElementById('reportedCommentContent').textContent = commentContent;
+            document.getElementById('reportedCommentAuthor').textContent = commentAuthor;
+        });
+
+        // Handle report submission
+        document.getElementById('submitReport').addEventListener('click', function() {
+            const commentId = document.getElementById('reportedCommentId').value;
+            const reason = document.querySelector('input[name="reportReason"]:checked')?.value;
+
+            if (!reason) {
+                alert('Please select a reason for reporting');
+                return;
+            }
+
+            fetch(`/api/comments/${commentId}/report`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal and show success message
+                    const modal = bootstrap.Modal.getInstance(reportCommentModal);
+                    modal.hide();
+                    alert('Thank you for your report. Our team will review it shortly.');
+                } else {
+                    alert(data.message || 'Error submitting report');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting report:', error);
+                alert('Error submitting report. Please try again.');
+            });
+        });
+    }
+
+    // Add CSS for report button
+    document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        .btn-link.text-muted {
+            padding: 0;
+            font-size: 0.875rem;
+        }
+        .btn-link.text-muted:hover {
+            color: var(--bs-danger) !important;
+        }
+    </style>
+    `);
 });
 </script>
 
