@@ -12,12 +12,17 @@ from app.db import db
 @app.route('/api/reaction', methods=[constants.HTTP_METHOD_POST])
 @login_required
 def toggle_reaction():
-    """Toggle a user's reaction (like/unlike) to an event.
+    """Toggle a user's reaction (like/unlike, dislike/undislike) to an event.
+
+    This endpoint handles following scenarios:
+    1. If no reaction exists: Add new reaction
+    2. If same reaction exists: Remove it (toggle off)
+    3. If different reaction exists: Update to new reaction type
 
     This endpoint expects JSON data with:
     - target_type: The type of content being reacted to ('event')
     - target_id: The ID of the content
-    - reaction_type: The type of reaction ('like')
+    - reaction_type: The type of reaction ('like' or 'dislike')
 
     Returns:
         JSON response with the new reaction count and status.
@@ -38,47 +43,68 @@ def toggle_reaction():
     # Get the user ID from the session
     user_id = session[constants.USER_ID]
 
-    # Check if the user has already reacted to this target
+    # Check if the user has any reaction to this target
     with db.get_cursor() as cursor:
         cursor.execute(
             """
-            SELECT reaction_id 
-            FROM user_reactions 
-            WHERE target_type = %s AND target_id = %s AND user_id = %s
+            SELECT reaction_id, reaction_type
+            FROM user_reactions
+            WHERE target_type = %s
+              AND target_id = %s
+              AND user_id = %s
             """,
             (target_type, target_id, user_id)
         )
         existing_reaction = cursor.fetchone()
 
         if existing_reaction:
-            # User has already reacted, so remove the reaction (unlike)
-            cursor.execute(
-                """
-                DELETE FROM user_reactions 
-                WHERE reaction_id = %s
-                """,
-                (existing_reaction['reaction_id'],)
-            )
-            success_message = 'Reaction removed'
-            is_active = False
+            # User has an existing reaction
+            existing_type = existing_reaction['reaction_type']
+
+            if existing_type == reaction_type:
+                # Same reaction type, so remove it (toggle off)
+                cursor.execute(
+                    """
+                    DELETE
+                    FROM user_reactions
+                    WHERE reaction_id = %s
+                    """,
+                    (existing_reaction['reaction_id'],)
+                )
+                success_message = f'{reaction_type.capitalize()} removed'
+                is_active = False
+            else:
+                # Different reaction type, so update it
+                cursor.execute(
+                    """
+                    UPDATE user_reactions
+                    SET reaction_type = %s
+                    WHERE reaction_id = %s
+                    """,
+                    (reaction_type, existing_reaction['reaction_id'])
+                )
+                success_message = f'Changed from {existing_type} to {reaction_type}'
+                is_active = True
         else:
-            # User has not reacted, so add the reaction (like)
+            # User has not reacted, so add the reaction
             cursor.execute(
                 """
-                INSERT INTO user_reactions (target_type, target_id, user_id, reaction_type) 
+                INSERT INTO user_reactions (target_type, target_id, user_id, reaction_type)
                 VALUES (%s, %s, %s, %s)
                 """,
                 (target_type, target_id, user_id, reaction_type)
             )
-            success_message = 'Reaction added'
+            success_message = f'{reaction_type.capitalize()} added'
             is_active = True
 
-        # Get the updated reaction count
+        # Get the updated reaction count for the requested type
         cursor.execute(
             """
-            SELECT COUNT(*) as count 
-            FROM user_reactions 
-            WHERE target_type = %s AND target_id = %s AND reaction_type = %s
+            SELECT COUNT(*) as count
+            FROM user_reactions
+            WHERE target_type = %s
+              AND target_id = %s
+              AND reaction_type = %s
             """,
             (target_type, target_id, reaction_type)
         )

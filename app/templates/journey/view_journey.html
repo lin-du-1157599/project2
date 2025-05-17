@@ -828,6 +828,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize reaction buttons
     function initializeReactionButtons() {
+        // Remove existing event listeners first
+        document.querySelectorAll('.btn-reaction').forEach(button => {
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+        });
+
         document.querySelectorAll('.btn-reaction').forEach(button => {
             const targetType = button.dataset.targetType;
             const targetId = button.dataset.targetId;
@@ -851,7 +857,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Add click event listener
-            button.addEventListener('click', function() {
+            // Modify the reaction button click handler inside initializeReactionButtons()
+            button.addEventListener('click', function (e) {
+                e.preventDefault(); // Prevent event bubbling
                 if (!isAuthenticated) {
                     window.location.href = '/login';
                     return;
@@ -868,37 +876,49 @@ document.addEventListener('DOMContentLoaded', function() {
                         reaction_type: reactionType
                     })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update count
-                        countSpan.textContent = data.count;
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update count for current reaction
+                            countSpan.textContent = data.count;
 
-                        // Toggle icon
-                        if (data.is_active) {
-                            icon.classList.remove('far');
-                            icon.classList.add('fas');
-                            icon.classList.add('text-primary');
-                        } else {
-                            icon.classList.remove('fas');
-                            icon.classList.remove('text-primary');
-                            icon.classList.add('far');
-                        }
+                            // Toggle icon for current reaction
+                            if (data.is_active) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                                icon.classList.add('text-primary');
 
-                        // If this is a like, remove dislike and vice versa
-                        const oppositeType = reactionType === 'like' ? 'dislike' : 'like';
-                        const oppositeButton = document.querySelector(
-                            `.btn-reaction[data-target-type="${targetType}"][data-target-id="${targetId}"][data-reaction-type="${oppositeType}"]`
-                        );
-                        if (oppositeButton) {
-                            const oppositeIcon = oppositeButton.querySelector('i');
-                            oppositeIcon.classList.remove('fas');
-                            oppositeIcon.classList.remove('text-primary');
-                            oppositeIcon.classList.add('far');
+                                // If activated this reaction, deactivate the opposite reaction
+                                const oppositeType = reactionType === 'like' ? 'dislike' : 'like';
+                                const oppositeButton = document.querySelector(
+                                    `.btn-reaction[data-target-type="${targetType}"][data-target-id="${targetId}"][data-reaction-type="${oppositeType}"]`
+                                );
+
+                                if (oppositeButton) {
+                                    // Update opposite button visual state
+                                    const oppositeIcon = oppositeButton.querySelector('i');
+                                    oppositeIcon.classList.remove('fas');
+                                    oppositeIcon.classList.remove('text-primary');
+                                    oppositeIcon.classList.add('far');
+
+                                    // Fetch and update the opposite reaction count
+                                    fetch(`/api/reaction/status?target_type=${targetType}&target_id=${targetId}&reaction_type=${oppositeType}`)
+                                        .then(response => response.json())
+                                        .then(oppData => {
+                                            if (oppData.success) {
+                                                const oppositeCountSpan = oppositeButton.querySelector(`.${oppositeType}-count`);
+                                                oppositeCountSpan.textContent = oppData.count;
+                                            }
+                                        });
+                                }
+                            } else {
+                                icon.classList.remove('fas');
+                                icon.classList.remove('text-primary');
+                                icon.classList.add('far');
+                            }
                         }
-                    }
-                })
-                .catch(error => console.error('Error toggling reaction:', error));
+                    })
+                    .catch(error => console.error('Error toggling reaction:', error));
             });
         });
     }
