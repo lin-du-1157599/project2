@@ -391,11 +391,13 @@ def search_public_journey():
 @app.route('/journeys/hidden', methods=[constants.HTTP_METHOD_GET])
 @login_and_role_required([constants.USER_ROLE_EDITOR, constants.USER_ROLE_ADMIN])
 def hidden_journeys():
+    user_role = session[constants.USER_ROLE]
+    
     # Query to get all hidden journeys ordered by most recently updated
     with db.get_cursor() as cursor:
         cursor.execute("""
             SELECT j.journey_id, j.title, j.description, j.update_date, j.user_id,
-                   u.username, u.first_name, u.last_name 
+                u.username, u.status, u.shareable
             FROM journeys j
             JOIN users u ON j.user_id = u.user_id
             WHERE j.is_hidden = 1
@@ -418,5 +420,21 @@ def hidden_journeys():
                 groupedJourneys[username] = []
             groupedJourneys[username].append(journey)
 
-        print('grouped_journeys: ',groupedJourneys)
-        return render_template(constants.TEMPLATE_HIDDEN_JOURNEY, groupedJourneys = groupedJourneys)
+        # count the total hidden journey of the user
+        hiddenCounts = {}
+        for username, journeys in groupedJourneys.items():
+            hiddenCounts[username] = len(journeys)
+
+        return render_template(constants.TEMPLATE_HIDDEN_JOURNEY, groupedJourneys = groupedJourneys, hiddenCounts = hiddenCounts, user_role = user_role)
+    
+    
+@app.route('/user/<int:user_id>/update_shareable', methods=[constants.HTTP_METHOD_POST])
+@login_and_role_required([constants.USER_ROLE_EDITOR, constants.USER_ROLE_ADMIN])
+def update_user_shareable(user_id):
+    shareable = request.form[constants.USER_SHAREABLE]
+
+    with db.get_cursor() as cursor:
+        cursor.execute("UPDATE users SET shareable = %s WHERE user_id = %s;", (shareable, user_id))
+        flash('Updated successfully.', constants.FLASH_MESSAGE_SUCCESS)
+
+    return redirect(url_for(constants.URL_HIDDEN_JOURNEY))

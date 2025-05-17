@@ -55,6 +55,7 @@ URL_HOME = 'home'
 URL_ROOT = 'root'
 URL_ANNOUNCEMENTS = 'announcements_list'
 URL_DEPARTURE_BOARD = 'departure_board'
+URL_HIDDEN_JOURNEY = 'hidden_journeys'
 
 # Template file names
 TEMPLATE_HOME = 'home.html'
@@ -87,7 +88,7 @@ TEMPLATE_DELETE_EVENT = 'delete_event.html'
 
 # Announcement templates
 TEMPLATE_ANNOUNCEMENTS = 'announcements.html'
-TEMPLATE_ADD_ANNOUNCEMENTS = 'add_announcement.html'
+TEMPLATE_ADD_ANNOUNCEMENT = 'add_announcement.html'
 TEMPLATE_VIEW_ANNOUNCEMENTS = 'view_announcement.html'
 
 # Departure Board templates
