@@ -20,6 +20,8 @@
                     <span class="badge rounded-pill bg-primary">Public</span>
                     {% elif journey.status == 'private' %}
                     <span class="badge rounded-pill bg-secondary">Private</span>
+                    {% elif journey.status == 'published' %}
+                    <span class="badge rounded-pill bg-success">Published</span>
                     {% endif %}
 
                     {% if journey.is_hidden == 1 %}
@@ -199,29 +201,79 @@
                                 </div>
                                 {% endif %}
 
-
-                                                                <div class="ms-auto text-end mt-4 me-4 mb-4">
-                                            <!-- Both buttons as small icon buttons -->
-                                                                    {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
-                                                <button class="btn btn-sm btn-outline-danger delete-event-btn"
-                                                       title="Delete Event"
-                                                       data-bs-toggle="modal"
-                                                       data-bs-target="#deleteEventModal"
-                                                       data-journey-id="{{ journey.journey_id }}"
-                                                       data-event-id="{{ event.event_id }}"
-                                                       data-event-title="{{ event.title }}"
-                                                       data-mode="{{ mode }}">
-                                                    <i class="fas fa-trash"></i>
+                                <!-- Comment Section -->
+                                <div class="card-footer bg-white border-0">
+                                    <div class="comment-section">
+                                        <!-- Comment Form -->
+                                        {% if session.get('user_id') %}
+                                        <div class="comment-form mb-3">
+                                            <textarea class="form-control comment-input" 
+                                                      data-event-id="{{ event.event_id }}"
+                                                      rows="2" 
+                                                      placeholder="Write a comment..." 
+                                                      maxlength="500"></textarea>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <small class="text-muted">
+                                                    <span class="char-count">0</span>/500 characters
+                                                </small>
+                                                <button class="btn btn-primary btn-sm post-comment" 
+                                                        data-event-id="{{ event.event_id }}">
+                                                    Post Comment
                                                 </button>
-                                            {% endif %}
-                                            {% if (mode== 'all' and journey.user_id == user_id) or (mode== 'public' and session['role'] != 'traveller')%}
-                                            <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode = mode) }}"
-                                            class="btn btn-sm btn-outline-primary me-1" title="Edit Event">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        {% endif %}
+                                            </div>
                                         </div>
+                                        {% else %}
+                                        <div class="alert alert-info mb-3">
+                                            Please <a href="{{ url_for('login') }}">log in</a> to comment.
+                                        </div>
+                                        {% endif %}
 
+                                        <!-- Comments List -->
+                                        <div class="comments-list" id="comments-{{ event.event_id }}">
+                                            <!-- Comments will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Like button and action buttons -->
+                                <div class="card-footer bg-white border-0 pb-3 d-flex justify-content-between align-items-center">
+                                    <!-- Like button - only shown for public journeys -->
+                                    <div>
+                                        {% if journey.status == 'public' %}
+                                        <button class="btn btn-sm btn-like"
+                                                data-event-id="{{ event.event_id }}"
+                                                data-is-authenticated="{% if session.get('loggedin') %}true{% else %}false{% endif %}">
+                                            <i class="far fa-heart me-1"></i>
+                                            <span class="like-count">0</span>
+                                        </button>
+                                        {% else %}
+                                        <!-- Placeholder div to maintain layout -->
+                                        <div></div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Edit/Delete buttons -->
+                                    <div>
+                                        {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
+                                            <button class="btn btn-sm btn-outline-danger delete-event-btn"
+                                                   title="Delete Event"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#deleteEventModal"
+                                                   data-journey-id="{{ journey.journey_id }}"
+                                                   data-event-id="{{ event.event_id }}"
+                                                   data-event-title="{{ event.title }}"
+                                                   data-mode="{{ mode }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                        {% if (mode== 'all' and journey.user_id == user_id) or (mode== 'public' and session['role'] != 'traveller')%}
+                                        <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode = mode) }}"
+                                        class="btn btn-sm btn-outline-primary me-1" title="Edit Event">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -230,16 +282,15 @@
                         <div class="col-6 pe-4 text-end">
                             <div class="card border-0 shadow-sm mb-3">
                                 <div class="card-body">
-<h5 class="card-title fw-bold mb-0" style="word-wrap: break-word; overflow-wrap: break-word;">{{ event.title }}</h5>
-                                {% if event.location %}
-                                    <div class="mt-2 mb-2">
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        {{ event.location }}
-                                    </div>
-                                {% endif %}
+                                    <h5 class="card-title fw-bold mb-0" style="word-wrap: break-word; overflow-wrap: break-word;">{{ event.title }}</h5>
+                                    {% if event.location %}
+                                        <div class="mt-2 mb-2">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            {{ event.location }}
+                                        </div>
+                                    {% endif %}
 
                                     <p class="card-text">{{ event.description }}</p>
-
                                 </div>
 
                                 <!-- Event photo -->
@@ -252,28 +303,79 @@
                                 </div>
                                 {% endif %}
 
-                                <div class="me-auto text-end mt-4 ms-4 mb-4">
-                                            <!-- Both buttons as small icon buttons -->
-                                            {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
-                                                <button class="btn btn-sm btn-outline-danger delete-event-btn me-1"
-                                                       title="Delete Event"
-                                                       data-bs-toggle="modal"
-                                                       data-bs-target="#deleteEventModal"
-                                                       data-journey-id="{{ journey.journey_id }}"
-                                                       data-event-id="{{ event.event_id }}"
-                                                       data-event-title="{{ event.title }}"
-                                                       data-mode="{{ mode }}">
-                                                    <i class="fas fa-trash"></i>
+                                <!-- Comment Section -->
+                                <div class="card-footer bg-white border-0">
+                                    <div class="comment-section">
+                                        <!-- Comment Form -->
+                                        {% if session.get('user_id') %}
+                                        <div class="comment-form mb-3">
+                                            <textarea class="form-control comment-input" 
+                                                      data-event-id="{{ event.event_id }}"
+                                                      rows="2" 
+                                                      placeholder="Write a comment..." 
+                                                      maxlength="500"></textarea>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <small class="text-muted">
+                                                    <span class="char-count">0</span>/500 characters
+                                                </small>
+                                                <button class="btn btn-primary btn-sm post-comment" 
+                                                        data-event-id="{{ event.event_id }}">
+                                                    Post Comment
                                                 </button>
-                                            {% endif %}
-                                            {% if journey.user_id == user_id or (mode== 'public' and session['role'] != 'traveller')%}
-                                                <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode=mode) }}"
-                                                class="btn btn-sm btn-outline-primary" title="Edit Event">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            {% endif %}
+                                            </div>
                                         </div>
+                                        {% else %}
+                                        <div class="alert alert-info mb-3">
+                                            Please <a href="{{ url_for('login') }}">log in</a> to comment.
+                                        </div>
+                                        {% endif %}
 
+                                        <!-- Comments List -->
+                                        <div class="comments-list" id="comments-{{ event.event_id }}">
+                                            <!-- Comments will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Like button and action buttons -->
+                                <div class="card-footer bg-white border-0 pb-3 d-flex justify-content-between align-items-center">
+                                    <!-- Like button - only shown for public journeys -->
+                                    <div>
+                                        {% if journey.status == 'public' %}
+                                        <button class="btn btn-sm btn-like"
+                                                data-event-id="{{ event.event_id }}"
+                                                data-is-authenticated="{% if session.get('loggedin') %}true{% else %}false{% endif %}">
+                                            <i class="far fa-heart me-1"></i>
+                                            <span class="like-count">0</span>
+                                        </button>
+                                        {% else %}
+                                        <!-- Placeholder div to maintain layout -->
+                                        <div></div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Edit/Delete buttons -->
+                                    <div>
+                                        {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
+                                            <button class="btn btn-sm btn-outline-danger delete-event-btn me-1"
+                                                   title="Delete Event"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#deleteEventModal"
+                                                   data-journey-id="{{ journey.journey_id }}"
+                                                   data-event-id="{{ event.event_id }}"
+                                                   data-event-title="{{ event.title }}"
+                                                   data-mode="{{ mode }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                        {% if journey.user_id == user_id or (mode== 'public' and session['role'] != 'traveller')%}
+                                            <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode=mode) }}"
+                                            class="btn btn-sm btn-outline-primary" title="Edit Event">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -437,6 +539,76 @@
             });
         });
 
+        // Initialize like buttons
+        const likeButtons = document.querySelectorAll('.btn-like');
+
+        // Initialize each like button
+        likeButtons.forEach(button => {
+            const eventId = button.getAttribute('data-event-id');
+            const isAuthenticated = button.getAttribute('data-is-authenticated') === 'true';
+            const likeCount = button.querySelector('.like-count');
+            const heartIcon = button.querySelector('i');
+
+            // Get initial like status and count
+           fetch(`/api/reaction/status?target_type=event&target_id=${eventId}&reaction_type=like`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update like count
+                            likeCount.textContent = data.count;
+
+                            // Update heart icon
+                            if (data.is_active) {
+                                heartIcon.classList.remove('far');
+                                heartIcon.classList.add('fas');
+                                heartIcon.classList.add('text-danger');
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error fetching like status:', error));
+
+            // Add click event listener
+            button.addEventListener('click', function() {
+                if (!isAuthenticated) {
+                    // Redirect to login page
+                    window.location.href = "{{ url_for('login') }}";
+                    return;
+                }
+
+                // Toggle like
+                fetch('/api/reaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        target_type: 'event',
+                        target_id: eventId,
+                        reaction_type: 'like'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update like count
+                        likeCount.textContent = data.count;
+
+                        // Toggle heart icon
+                        if (data.is_active) {
+                            heartIcon.classList.remove('far');
+                            heartIcon.classList.add('fas');
+                            heartIcon.classList.add('text-danger');
+                        } else {
+                            heartIcon.classList.remove('fas');
+                            heartIcon.classList.remove('text-danger');
+                            heartIcon.classList.add('far');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error toggling like:', error));
+            });
+        });
+
         // Add hover effect for editable locations
         const editableLocations = document.querySelectorAll('.location-editable');
 
@@ -561,6 +733,227 @@
             }
         });
     }
+});
+
+// Add CSS for like button states
+document.head.insertAdjacentHTML('beforeend', `
+<style>
+    .btn-like {
+        border: none;
+        background: transparent;
+        transition: transform 0.2s;
+    }
+    .btn-like:hover {
+        transform: scale(1.1);
+    }
+    .btn-like .fas.fa-heart {
+        color: #e55b4c;
+    }
+    .btn-like .far.fa-heart {
+        color: #777;
+    }
+</style>
+`);
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Character count for all comment inputs
+    document.querySelectorAll('.comment-input').forEach(input => {
+        const charCount = input.parentElement.querySelector('.char-count');
+        
+        input.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = length;
+            if (length > 500) {
+                charCount.classList.add('text-danger');
+            } else {
+                charCount.classList.remove('text-danger');
+            }
+        });
+    });
+
+    // Load comments for all events
+    function loadComments(eventId) {
+        const commentsList = document.getElementById(`comments-${eventId}`);
+        fetch(`/api/comments/${eventId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    commentsList.innerHTML = data.comments.map(comment => `
+                        <div class="comment mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>${comment.username}</strong>
+                                <small class="text-muted">
+                                    ${new Date(comment.created_at).toLocaleString()}
+                                </small>
+                            </div>
+                            <p class="mb-1">${comment.content}</p>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-sm btn-reaction btn-like" 
+                                        data-target-type="comment" 
+                                        data-target-id="${comment.id}"
+                                        data-reaction-type="like"
+                                        data-is-authenticated="{% if session.get('loggedin') %}true{% else %}false{% endif %}">
+                                    <i class="far fa-thumbs-up me-1"></i>
+                                    <span class="like-count">${comment.reactions.like}</span>
+                                </button>
+                                <button class="btn btn-sm btn-reaction btn-dislike"
+                                        data-target-type="comment" 
+                                        data-target-id="${comment.id}"
+                                        data-reaction-type="dislike"
+                                        data-is-authenticated="{% if session.get('loggedin') %}true{% else %}false{% endif %}">
+                                    <i class="far fa-thumbs-down me-1"></i>
+                                    <span class="dislike-count">${comment.reactions.dislike}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Initialize reaction buttons
+                    initializeReactionButtons();
+                }
+            });
+    }
+
+    // Initialize reaction buttons
+    function initializeReactionButtons() {
+        document.querySelectorAll('.btn-reaction').forEach(button => {
+            const targetType = button.dataset.targetType;
+            const targetId = button.dataset.targetId;
+            const reactionType = button.dataset.reactionType;
+            const isAuthenticated = button.dataset.isAuthenticated === 'true';
+            const countSpan = button.querySelector(`.${reactionType}-count`);
+            const icon = button.querySelector('i');
+
+            // Get initial reaction status
+            if (isAuthenticated) {
+                fetch(`/api/reaction/status?target_type=${targetType}&target_id=${targetId}&reaction_type=${reactionType}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.is_active) {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            icon.classList.add('text-primary');
+                        }
+                    })
+                    .catch(error => console.error('Error fetching reaction status:', error));
+            }
+
+            // Add click event listener
+            button.addEventListener('click', function() {
+                if (!isAuthenticated) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                fetch('/api/reaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        target_type: targetType,
+                        target_id: targetId,
+                        reaction_type: reactionType
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update count
+                        countSpan.textContent = data.count;
+
+                        // Toggle icon
+                        if (data.is_active) {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            icon.classList.add('text-primary');
+                        } else {
+                            icon.classList.remove('fas');
+                            icon.classList.remove('text-primary');
+                            icon.classList.add('far');
+                        }
+
+                        // If this is a like, remove dislike and vice versa
+                        const oppositeType = reactionType === 'like' ? 'dislike' : 'like';
+                        const oppositeButton = document.querySelector(
+                            `.btn-reaction[data-target-type="${targetType}"][data-target-id="${targetId}"][data-reaction-type="${oppositeType}"]`
+                        );
+                        if (oppositeButton) {
+                            const oppositeIcon = oppositeButton.querySelector('i');
+                            oppositeIcon.classList.remove('fas');
+                            oppositeIcon.classList.remove('text-primary');
+                            oppositeIcon.classList.add('far');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error toggling reaction:', error));
+            });
+        });
+    }
+
+    // Add CSS for reaction buttons
+    document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        .btn-reaction {
+            border: none;
+            background: transparent;
+            transition: transform 0.2s;
+            padding: 0.25rem 0.5rem;
+        }
+        .btn-reaction:hover {
+            transform: scale(1.1);
+        }
+        .btn-reaction .fas {
+            color: var(--bs-primary);
+        }
+        .btn-reaction .far {
+            color: #777;
+        }
+    </style>
+    `);
+
+    // Load comments for all events on page load
+    document.querySelectorAll('.comments-list').forEach(commentsList => {
+        const eventId = commentsList.id.split('-')[1];
+        loadComments(eventId);
+    });
+
+    // Post comment
+    document.querySelectorAll('.post-comment').forEach(button => {
+        button.addEventListener('click', function() {
+            const eventId = this.dataset.eventId;
+            const input = document.querySelector(`.comment-input[data-event-id="${eventId}"]`);
+            const content = input.value.trim();
+            
+            if (!content) return;
+
+            fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event_id: eventId,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                input.value = '';
+                input.parentElement.querySelector('.char-count').textContent = '0';
+                loadComments(eventId);
+            })
+            .catch(error => {
+                if (error.status === 401) {
+                    window.location.href = '/login';
+                }
+            });
+        });
+    });
 });
 </script>
 
