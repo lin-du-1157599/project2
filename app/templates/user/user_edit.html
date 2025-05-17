@@ -115,21 +115,6 @@
                                 {% endif %}
                             </div>
 
-                            <!-- Dropdown Menu - Shareable -->
-                            <div class="col-lg-6 mb-3">
-                                <label for="role" class="form-label fw-bold fs-5">Shareable</label>
-                                {% if user['username'] != session.get('username') %}
-                                    <select class="form-select form-select-lg" name="shareable" id="shareable">
-                                        <option value=1 {% if user['shareable'] == 1 %} selected {% endif %}>Can share</option>
-                                        <option value=0 {% if user['shareable'] == 0 %} selected {% endif %}>Cannot Share</option>
-                                    </select>
-                                {% else %}
-                                    <input type="text" class="form-control form-control-lg" id="role" name="role" value="{{ user['role'] }}" disabled>
-                                {% endif %}
-                            </div>
-                            <div class="col-lg-6 mb-3"></div>
-                        </div>
-
                         <!-- Save Button -->
                         {% if user['username'] != session['username'] %}
                         <div class="row justify-content-center">
