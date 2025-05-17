@@ -11,7 +11,8 @@ USER_ROLE_EDITOR = 'editor'
 USER_ROLE_ADMIN = 'admin'
 
 # User information fields
-USER_ID = 'user_id'  # Unique identifier for the user
+USER_ID = 'user_id'
+FOLLOWED_ID = 'followed_id'
 USERNAME = 'username' 
 USER_ROLE = 'role'
 EMAIL = 'email'

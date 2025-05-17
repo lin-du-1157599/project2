@@ -107,7 +107,6 @@
                                         })">
                                   Unfollow
                                 </button>
-
                             {% else %}
                                 <form action="{{ url_for('follow_journey', journey_id=journey.journey_id, mode=mode) }}" method="post" style="display:inline;">
                                     <button type="submit" class="btn btn-sm btn-primary" title="Follow Journey">Follow</button>
