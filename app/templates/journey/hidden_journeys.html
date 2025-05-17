@@ -2,8 +2,10 @@
 {% block title %}Hidden Journeys{% endblock %}
 
 {# Set the active page to be highlighted in the navigation bar. #}
-{% set active_page = 'hidden_journeys' %}
+{% set active_page = 'hidden_journey' %}
 {% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -26,87 +28,105 @@
     });
 </script>
 
-<div class="container px-5 pb-5">
+
+<div class="container px-5">
     <div class="row justify-content-center">
 
-        <!-- Public Journeys List -->
-        <div class="col-md-10 px-2">
-            <div class="p-5" style="background-color: #f0f0f0; border-radius: 40px;">
-                <!-- Public Journeys - Title -->
-                <div class="row">
-                    <div class="col mt-2 mb-5">
-                        <h1 class="fw-bold">Hidden Journeys</h1>
-                        <p class="fs-5">Review journeys that have been hidden from public view due to inappropriate or questionable content.</p>
-                    </div>
+        <!-- Hidden Journeys List -->
+        <div style="padding-bottom: 2.8rem;">
+
+            <!-- Public Journeys - Title -->
+            <div class="row">
+                <div class="col mt-2 mb-5">
+                    <h1 class="fw-bold">Hidden Journeys</h1>
+                    <p class="fs-5">Review journeys that have been hidden from public view due to inappropriate or questionable content.</p>
                 </div>
-                
-                {% if groupedJourneys and groupedJourneys|length > 0 %}
-                    {% for username, journeys in groupedJourneys.items() %}
-                    <div class="mb-4">
-
-                        <!-- Username and button -->
-                        <div class="d-flex justify-content-between align-items-center mb-4 px-4">
-                            <div>
-                                <h2 class="fw-bold m-0">{{ username }}</h2>
-                                <!-- <span class="text-muted m-0">{{ journeys[0].first_name }}{{ journeys[0].last_name }}</p>     -->
-                            </div>
-                            <a href="{{ url_for('edit_user', user_id=journeys[0].user_id) }}" class="btn btn-primary" style="width: 140px;">
-                                <i class="fas fa-user me-2"></i>View User
-                            </a>
-                        </div>
-
-                        <!-- Journey Details by the username -->
-                        <div class="row row-cols-1 row-cols-md-2 g-4 pb-5">
-                            {% for journey in journeys %}
-                            <div class="col"> 
-                                <div class="card border-0 rounded-5 h-100 p-4">
-
-                                    <div class="card-body">
-                                        <h2 class="card-title fw-bold m-0">{{ journey.title|safe }}</h2>
-
-                                        <!-- Author info -->
-                                        <h6 class="card-subtitle mb-2 pt-2" style="color: #a0a0a0;">
-                                            By:
-                                            {% if journey.first_name and journey.last_name %}
-                                                {{ journey.first_name }} {{ journey.last_name }} (@{{ journey.username }})
-                                            {% else %}
-                                                @{{ journey.username }}
-                                            {% endif %}
-                                        </h6>
-
-                                        <!-- Updated date -->
-                                        <h6 class="card-subtitle mb-3 pb-3" style="color: #a0a0a0;">
-                                            Updated: {{ journey.update_date.strftime('%d %b %Y') }}
-                                        </h6>
-
-                                        <p class="card-text">
-                                            {{ journey.description[:120]|safe }}
-                                            {% if journey.description|length > 120 %}...
-                                            {% endif %}
-                                        </p>
-                                    </div>
-                            
-
-                                    <div class="card-footer bg-white border-0 rounded-5">
-                                        <div class="text-center py-2">
-                                            <a href="{{ url_for('view_journey', journey_id=journey.journey_id, mode='public') }}" class="btn btn-outline-primary btn-lg w-100">View Journey</a>
-                                        </div>
-                                    </div>
+            </div>
+            
+            <!-- Hidden Journeys grouped by user -->
+            {% if groupedJourneys and groupedJourneys|length > 0 %}
+                {% for username, journeys in groupedJourneys.items() %}
+                <div class="bg-white mb-5" style="border-radius: 12px; box-shadow: 1px 1px 4px rgb(0 0 0 / 4%); padding: 1.2rem 1.2rem 0.4rem 1.2rem;">
+                    
+                    <!-- Username and button -->
+                    <div class="row" style="padding-bottom: 0.8rem;">
+                        <div class="col d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                            <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h4 class="fw-bold m-0">{{ username }}</h4>                                
+                                    {% if user_role == 'admin' %}
+                                    <a href="{{ url_for('edit_user', user_id=journeys[0].user_id) }}" class="text-muted fs-4">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <p class="text-muted m-0" style="font-size: 11px;">{{ hiddenCounts[username] }} hidden journeys
+                                    {% if journeys[0].status == 'active' %}
+                                        <span class="badge bg-status-active mx-1" style="font-size: 9px;">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-status-banned mx-1" style="font-size: 9px;">Banned</span>
+                                    {% endif %}
+                                    {% if journeys[0].shareable == 1 %}
+                                        <span class="badge border border-success text-success" style="font-size: 9px;">Sharing Allowed</span>
+                                    {% else %}
+                                        <span class="badge border border-danger text-danger" style="font-size: 9px;">Sharing Blocked</span>
+                                    {% endif %}
+                                    </p>
                                 </div>
                             </div>
-                            {% endfor %}
+                        
+                            <div class="d-flex justify-content-end align-items-center mb-2 mb-md-0">
+                                
+                                <form action="{{ url_for('update_user_shareable', user_id=journeys[0].user_id) }}" id=shareable method="POST">
+                                    {% if journeys[0].shareable == 1 %}
+                                    <input type="hidden" name="shareable" value=0>
+                                        <button type="submit" class="btn btn-danger btn-sm mt-1 mt-md-0" style="padding: 8px 16px;">
+                                            <i class="fas fa-ban me-1"></i>  Restrict Sharing
+                                        </button>
+                                    {% else %}
+                                    <input type="hidden" name="shareable" value=1>
+                                        <button type="submit" class="btn btn-success btn-sm mt-1 mt-md-0" style="padding: 8px 16px;">
+                                            <i class="fas fa-check me-1"></i>  Allow Sharing
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
                         </div>
-
-                        <hr style="padding-top: 1.4em;">
                     </div>
+                        
+                    {% for journey in journeys %}
+                        <!-- List of hidden journey -->
+                        <div class="row" style="border-top: 1px solid #e5e7eb; padding: 1.2rem 0;">
+                            <div class="col d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mt-2 mt-md-0">
+                                <div class="d-flex justify-content-start align-items-center">
+                                    <h5 class="fw-bold m-0 mb-md-2">{{ journey.title|safe }}</h5>
+                                </div>
+                                <div class="d-flex justify-content-start justify-content-md-end align-items-center">
+                                    <p class="text-date text-muted" style="font-size: 11px;">
+                                        Updated: {{ journey.update_date.strftime('%d %b %Y') }}
+                                    </p>
+                                </div>
+                            
+                            </div> 
+                            <div>
+                                <p style="color: #333;">
+                                    {{ journey.description[:120]|safe }}
+                                    {% if journey.description|length > 120 %}...
+                                    {% endif %}
+                                </p>
+                                <a href="{{ url_for('view_journey', journey_id=journey.journey_id, mode='public') }}" style="color: #2563eb;">View Journey</a>
+                            </div>
+                        </div>
                     {% endfor %}
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-map-marked-alt fa-5x mb-4" style="color: #ccc;"></i>
-                    <h3 class="text-muted">No public journeys have been shared yet</h3>
                 </div>
-                {% endif %}
+                {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-map-marked-alt fa-5x mb-4" style="color: #ccc;"></i>
+                <h3 class="text-muted">No public journeys have been shared yet</h3>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>

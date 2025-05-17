@@ -131,7 +131,7 @@ def edit_user():
 
           with db.get_cursor() as cursor:
                cursor.execute(
-                    "SELECT username, email, first_name, last_name, role, shareable, status, location, personal_description, profile_image FROM users WHERE user_id = %s;",
+                    "SELECT username, email, first_name, last_name, role, status, location, personal_description, profile_image FROM users WHERE user_id = %s;",
                     (user_id,))
                user = cursor.fetchone()
 
@@ -143,14 +143,13 @@ def edit_user():
           user_id = request.form.get(constants.USER_ID)
           role = request.form.get(constants.USER_ROLE)
           status = request.form.get(constants.USER_STATUS)
-          shareable = request.form.get(constants.USER_SHAREABLE)
 
           with db.get_cursor() as cursor:
-               cursor.execute("UPDATE users SET role=%s, status=%s, shareable=%s WHERE user_id=%s;", (role, status, shareable, user_id,))
+               cursor.execute("UPDATE users SET role=%s, status=%s WHERE user_id=%s;", (role, status, user_id,))
 
           with db.get_cursor() as cursor:
                cursor.execute(
-                    "SELECT username, email, first_name, last_name, role, shareable, status FROM users WHERE user_id = %s;",
+                    "SELECT username, email, first_name, last_name, role, status FROM users WHERE user_id = %s;",
                     (user_id,))
                user = cursor.fetchone()
 
