@@ -65,12 +65,12 @@
                             </label>
                         </div>
                         {% if ( shareable == 0 ) and (journey.status == 'private') %}
-                        <div class="text-info p-2">
+                        <div class="text-hint p-2">
                             <i class="bi bi-exclamation-triangle me-1"></i>
                             Public sharing is not allowed for your account due to a violation of our content policy. This journey cannot be made public.
                         </div>
                         {% elif ( shareable == 0 ) and (journey.status == 'public') %}
-                        <div class="text-info p-2">
+                        <div class="text-hint p-2">
                             <i class="bi bi-exclamation-triangle me-1"></i>
                             Public sharing is not allowed for your account due to a violation of our content policy. Any journeys you previously shared will remain public. If an existing public journey is changed to private, it cannot be made public again.
                         </div>

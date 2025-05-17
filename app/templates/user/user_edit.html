@@ -1,4 +1,7 @@
 {% extends 'userbase.html' %}
+
+{% block title %}User Profile{% endblock %}
+
 {% set active_page = 'all_users' %}
 {% block content %}
 
@@ -29,6 +32,30 @@
                     <h3 class="fw-bold">{{ user.first_name }} {{ user.last_name }}</h3>
                     <h4 style="color: #646464">@{{ user.username }}</h4>
                 </div>
+
+                <!-- Profile - Follow -->
+                {% if user_id|string != session['user_id']|string %}
+                    {% if is_following %}
+                        <button class="btn btn-sm btn-danger mt-3 d-block mx-auto"
+                                onclick="showAlertModal('unfollowUserModal', 'Confirm Unfollow', 'Warning',
+                                'Are you sure you want to unfollow?<br>After unfollowing, related events will no longer appear on your Departure Board.',
+                                function(e) {
+                                    e.preventDefault();
+                                    const modalEl = document.getElementById('unfollowUserModal');
+                                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                                    if (modalInstance) {
+                                      modalInstance.hide();
+                                    }
+                                    window.location.href = '{{ url_for('unfollow_user', followed_id=user_id) }}';
+                                })">
+                          Unfollow
+                        </button>
+                    {% else %}
+                        <form action="{{ url_for('follow_user', followed_id=user_id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-primary mt-3 d-block mx-auto" title="Follow Journey">Follow</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
 
             </div>
         </div>
@@ -113,21 +140,6 @@
                                 {% endif %}
                             </div>
 
-                            <!-- Dropdown Menu - Shareable -->
-                            <div class="col-lg-6 mb-3">
-                                <label for="role" class="form-label fw-bold fs-5">Shareable</label>
-                                {% if user['username'] != session.get('username') %}
-                                    <select class="form-select form-select-lg" name="shareable" id="shareable">
-                                        <option value=1 {% if user['shareable'] == 1 %} selected {% endif %}>Can share</option>
-                                        <option value=0 {% if user['shareable'] == 0 %} selected {% endif %}>Cannot Share</option>
-                                    </select>
-                                {% else %}
-                                    <input type="text" class="form-control form-control-lg" id="role" name="role" value="{{ user['role'] }}" disabled>
-                                {% endif %}
-                            </div>
-                            <div class="col-lg-6 mb-3"></div>
-                        </div>
-
                         <!-- Save Button -->
                         {% if user['username'] != session['username'] %}
                         <div class="row justify-content-center">
@@ -143,5 +155,8 @@
         </div>
     </div>
 </div>
+
+{% set modal_id = 'unfollowUserModal' %}
+{% include 'components/modal.html' %}
 
 {% endblock %}

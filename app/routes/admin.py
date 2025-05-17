@@ -7,7 +7,7 @@ Unauthorized users are either redirected or shown a 403 error.
 """
 from app.config import constants
 from app import app
-from flask import request, redirect, render_template, session, url_for
+from flask import request, redirect, render_template, session, url_for, flash
 from app.db import db
 from app.routes.user import login
 # Importing decorators from the current package
@@ -129,28 +129,65 @@ def edit_user():
      if request.method == constants.HTTP_METHOD_GET:
           user_id = request.args.get(constants.USER_ID)
 
-          with db.get_cursor() as cursor:
-               cursor.execute(
-                    "SELECT username, email, first_name, last_name, role, shareable, status, location, personal_description, profile_image FROM users WHERE user_id = %s;",
-                    (user_id,))
-               user = cursor.fetchone()
+          if not user_id:
+              flash("User ID is required.", "danger")
+              return redirect(url_for('home'))
 
-          # Ensure None values are replaced with empty strings
+          with db.get_cursor() as cursor:
+              cursor.execute("""
+                             SELECT username,
+                                    email,
+                                    first_name,
+                                    last_name,
+                                    role,
+                                    status,
+                                    location,
+                                    personal_description,
+                                    profile_image
+                             FROM users
+                             WHERE user_id = %s;
+                             """, (user_id,))
+              user = cursor.fetchone()
+
+          if not user:
+              flash("User not found.", constants.FLASH_MESSAGE_DANGER)
+              return redirect(url_for('home'))
+
           user = {key: (value if value is not None else '') for key, value in user.items()}
 
-          return render_template(constants.TEMPLATE_USER_EDIT, user=user, user_id=user_id)
+          current_user_id = session['user_id']
+
+          is_following = None
+          # myself = False
+          if str(current_user_id) != str(user_id):
+              with db.get_cursor() as cursor:
+                  cursor.execute("""
+                                 SELECT EXISTS(SELECT 1
+                                               FROM user_follows
+                                               WHERE user_id = %s
+                                                 AND followed_id = %s) AS is_following;
+                                 """, (current_user_id, user_id))
+
+                  result = cursor.fetchone()
+                  is_following = bool(result['is_following'])
+
+          return render_template(
+              constants.TEMPLATE_USER_EDIT,
+              user=user,
+              user_id=user_id,
+              is_following=is_following
+          )
      elif request.method == constants.HTTP_METHOD_POST:
           user_id = request.form.get(constants.USER_ID)
           role = request.form.get(constants.USER_ROLE)
           status = request.form.get(constants.USER_STATUS)
-          shareable = request.form.get(constants.USER_SHAREABLE)
 
           with db.get_cursor() as cursor:
-               cursor.execute("UPDATE users SET role=%s, status=%s, shareable=%s WHERE user_id=%s;", (role, status, shareable, user_id,))
+               cursor.execute("UPDATE users SET role=%s, status=%s WHERE user_id=%s;", (role, status, user_id,))
 
           with db.get_cursor() as cursor:
                cursor.execute(
-                    "SELECT username, email, first_name, last_name, role, shareable, status FROM users WHERE user_id = %s;",
+                    "SELECT username, email, first_name, last_name, role, status FROM users WHERE user_id = %s;",
                     (user_id,))
                user = cursor.fetchone()
 
