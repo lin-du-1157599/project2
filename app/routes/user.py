@@ -5,7 +5,7 @@ from app.config.constants import DEFAULT_USER_ROLE, DEFAULT_STATUS
 from app.utils.decorators import if_logged_in_redirect, login_required
 from app.db import db
 from flask_bcrypt import Bcrypt
-from app.utils.helpers import allowed_file
+from app.utils.helpers import allowed_file, get_image_extension
 from werkzeug.utils import secure_filename
 import re, os
 from app.utils.validators import validate_firstname, validate_lastname, validate_email, validate_password, \
@@ -79,7 +79,7 @@ def login():
             # Attempt to validate the login details against the database.
             with db.get_cursor() as cursor:
                 cursor.execute('''
-                            SELECT user_id, username, password_hash, role, status, subscription_status, profile_image
+                            SELECT user_id, username, password_hash, role, status, subscription_status, profile_image, is_trial_used
                             FROM users
                             WHERE username = %s;
                             ''', (username,))
@@ -100,6 +100,7 @@ def login():
                         session[constants.USERNAME] = account[constants.USERNAME]
                         session[constants.USER_ROLE] = account[constants.USER_ROLE]
                         session[constants.USER_SUBSCRIPTION_STATUS] = account[constants.USER_SUBSCRIPTION_STATUS]
+                        session[constants.USER_IS_TRIAL_USED] = account[constants.USER_IS_TRIAL_USED]
                         session[constants.USER_PROFILE_IMAGE] = account[constants.USER_PROFILE_IMAGE]
 
                         return redirect(user_home_url())
@@ -114,6 +115,7 @@ def login():
                     flash("Incorrect username or password", constants.FLASH_MESSAGE_DANGER)
                     return render_template(constants.TEMPLATE_LOGIN,username=username)
         except Exception as e:
+            print(e)
             flash("An error occurred while processing your request. Please try again", constants.FLASH_MESSAGE_DANGER)
 
             return render_template(constants.TEMPLATE_LOGIN), constants.HTTP_STATUS_CODE_500
@@ -244,7 +246,7 @@ def profile():
         # Retrieve user profile from the database.
         with db.get_cursor() as cursor:
             cursor.execute(
-                "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description FROM users WHERE user_id = %s;",
+                "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description, subscription_status FROM users WHERE user_id = %s;",
                 (session[constants.USER_ID],))
             profile = cursor.fetchone()
             return render_template(constants.TEMPLATE_PROFILE, profile=profile)
@@ -289,7 +291,7 @@ def profile():
             # retrieve new profile details again
             with db.get_cursor() as cursor:
                 cursor.execute(
-                    "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description FROM users WHERE user_id = %s;",
+                    "SELECT user_id, username, email, first_name, last_name, location, profile_image, role, personal_description, subscription_status FROM users WHERE user_id = %s;",
                     (session[constants.USER_ID],))
                 profile = cursor.fetchone()
 
@@ -376,6 +378,8 @@ def logout():
     session.pop(constants.USER_ID, None)
     session.pop(constants.USERNAME, None)
     session.pop(constants.USER_ROLE, None)
+    session.pop(constants.USER_SUBSCRIPTION_STATUS, None)
+    session.pop(constants.USER_IS_TRIAL_USED, None)
 
     return redirect(url_for(constants.URL_ROOT))
 
@@ -401,8 +405,9 @@ def upload_image():
 
             return render_template(constants.TEMPLATE_PROFILE, user_id = user_id, profile = profile, image_error = image_error)
 
-        # retrieve the file name
-        profile_image_name = secure_filename(profile_image.filename)
+        file_type = get_image_extension(profile_image.mimetype)
+
+        profile_image_name = f"avatar_{user_id}.{file_type}"
 
         # save image to the folder
         profile_image_path = os.path.join(app.config[constants.IMAGE_UPLOAD_FOLDER], profile_image_name)
@@ -410,6 +415,8 @@ def upload_image():
 
         with db.get_cursor() as cursor:
             cursor.execute("UPDATE users SET profile_image=%s WHERE user_id = %s;",(profile_image_name, user_id))
+            session[constants.USER_PROFILE_IMAGE] = profile_image_name
+
         return redirect(url_for(constants.URL_PROFILE))
 
     return render_template(constants.TEMPLATE_PROFILE, user_id = user_id)

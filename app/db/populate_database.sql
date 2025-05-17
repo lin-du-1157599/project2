@@ -229,3 +229,14 @@ INSERT INTO events (journey_id, title, description, start_time, end_time, locati
 (20, 'Rakiura Track Day Walk', 'Walking a section of the Rakiura Great Walk.', '2024-12-06 09:00:00', '2024-12-06 15:00:00', 'Rakiura Track, Stewart Island', 'events/rakiura_track.jpg'),
 (20, 'Fresh Seafood Dinner', 'Local blue cod and paua (abalone) dinner at a waterfront restaurant.', '2024-12-06 18:00:00', '2024-12-06 20:00:00', 'South Sea Hotel, Oban', NULL);
 
+INSERT INTO subscriptions (
+    name, duration_months, is_free_trial, discount_percent, price_nzd_excl_gst, price_nzd_incl_gst, is_admin_grantable
+) VALUES
+    ('Free Trial', 1, 1, 100.00, 0.00, 0.00, 0),
+    ('One Month', 1, 0, 0.00, 5.22, 6.00, 0),
+    ('One Quarter', 3, 0, 10.00, 14.09, 16.20, 0),
+    ('One Year', 12, 0, 25.00, 46.96, 54.00, 0),
+    ('Admin Gift One Month', 1, 0, 100.00, 0.00, 0.00, 1),
+    ('Admin Gift One Quarter', 3, 0, 100.00, 0.00, 0.00, 1),
+    ('Admin Gift One Year', 12, 0, 100.00, 0.00, 0.00, 1);
+

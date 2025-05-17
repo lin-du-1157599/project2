@@ -25,6 +25,7 @@ USER_PROFILE_IMAGE='profile_image'
 USER_FULL_NAME = 'full_name'
 USER_PERSONAL_DESCRIPTION='personal_description'
 USER_SUBSCRIPTION_STATUS = 'subscription_status'
+USER_IS_TRIAL_USED = 'is_trial_used'
 USER_SHAREABLE = 'shareable'
 
 DEFAULT_USER_ROLE = 'traveller'
@@ -38,6 +39,15 @@ USER_STATUS_BANNED = 'banned'
 USER_SUBSCRIPTION_FREE = 'Free'
 USER_SUBSCRIPTION_TRIAL = 'Trial'
 USER_SUBSCRIPTION_PREMIUM = 'Premium'
+
+USER_IS_ADMIN_GRANTABLE_NO = 0
+USER_IS_ADMIN_GRANTABLE_YES = 1
+
+# Indicates the user has not used the free trial yet
+USER_IS_TRIAL_USED_NO = 0
+# Indicates the user has already used the free trial
+USER_IS_TRIAL_USED_YES = 1
+
 
 IMAGE_UPLOAD_FOLDER = 'IMAGE_UPLOAD_FOLDER'
 IMAGE_UPLOAD_FOLDER_URL = 'static/uploads'
@@ -56,6 +66,7 @@ URL_ROOT = 'root'
 URL_ANNOUNCEMENTS = 'announcements_list'
 URL_DEPARTURE_BOARD = 'departure_board'
 URL_HIDDEN_JOURNEY = 'hidden_journeys'
+URL_SUBSCRIPTION = 'subscription'
 
 # Template file names
 TEMPLATE_HOME = 'home.html'
@@ -93,6 +104,9 @@ TEMPLATE_VIEW_ANNOUNCEMENTS = 'view_announcement.html'
 
 # Departure Board templates
 TEMPLATE_DEPARTURE_BOARD = 'departure_board.html'
+
+TEMPLATE_SUBSCRIPTION = 'subscription.html'
+TEMPLATE_PAYMENT = 'payment.html'
 
 # HTTP status codes
 # User permission-related issues
@@ -140,3 +154,8 @@ CREATED_TIME = 'created_time'
 VIEW_TYPE_ALL = 'all'
 VIEW_TYPE_STAFF = 'staff'
 VIEW_TYPE_RESTRICTED = 'restricted'
+
+#subscriptions information fields
+SUBSCRIPTION_ID = 'subscription_id'
+
+SUBSCRIPTIONS_NAME_FREE_TRIAL = 'Free Trial'
