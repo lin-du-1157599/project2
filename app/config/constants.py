@@ -9,6 +9,7 @@ HTTP_METHOD_DELETE = 'DELETE'
 USER_ROLE_TRAVELLER = 'traveller'
 USER_ROLE_EDITOR = 'editor'
 USER_ROLE_ADMIN = 'admin'
+USER_ROLE_MODERATOR = 'moderator'
 
 # User information fields
 USER_ID = 'user_id'  # Unique identifier for the user

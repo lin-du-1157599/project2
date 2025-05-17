@@ -242,6 +242,13 @@
 							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'announcements_list' else '' }}" href="{{ url_for('announcements_list') }}">Announcements</a></h4>
 						</li>
 
+                        <!-- Moderation -->
+                        {% if session['role'] in ['admin', 'editor', 'moderator'] %}
+                            <li class="nav-item p-2">
+                                <h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'reported_comments' else '' }}" href="{{ url_for('reported_comments') }}">Moderation</a></h4>
+                            </li>
+                        {% endif %}
+
                         <!-- Departure Board -->
                         {% if session['subscription_status'] != 'Free' %}
                             <li class="nav-item p-2">
