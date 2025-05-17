@@ -18,6 +18,10 @@ def myjourney():
     user_id = session[constants.USER_ID]
     profile = user_profile_sidebar(user_id)
 
+    # if personal_descprition is None, set it to empty string
+    if profile[constants.USER_PERSONAL_DESCRIPTION] is None:
+        profile[constants.USER_PERSONAL_DESCRIPTION] = ''
+
     with db.get_cursor() as cursor:
         cursor.execute('''
                        SELECT journey_id, title, description, status, is_hidden, start_date, update_date 
