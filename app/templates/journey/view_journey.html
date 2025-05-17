@@ -20,6 +20,8 @@
                     <span class="badge rounded-pill bg-primary">Public</span>
                     {% elif journey.status == 'private' %}
                     <span class="badge rounded-pill bg-secondary">Private</span>
+                    {% elif journey.status == 'published' %}
+                    <span class="badge rounded-pill bg-success">Published</span>
                     {% endif %}
 
                     {% if journey.is_hidden == 1 %}
@@ -199,29 +201,45 @@
                                 </div>
                                 {% endif %}
 
-
-                                                                <div class="ms-auto text-end mt-4 me-4 mb-4">
-                                            <!-- Both buttons as small icon buttons -->
-                                                                    {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
-                                                <button class="btn btn-sm btn-outline-danger delete-event-btn"
-                                                       title="Delete Event"
-                                                       data-bs-toggle="modal"
-                                                       data-bs-target="#deleteEventModal"
-                                                       data-journey-id="{{ journey.journey_id }}"
-                                                       data-event-id="{{ event.event_id }}"
-                                                       data-event-title="{{ event.title }}"
-                                                       data-mode="{{ mode }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            {% endif %}
-                                            {% if (mode== 'all' and journey.user_id == user_id) or (mode== 'public' and session['role'] != 'traveller')%}
-                                            <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode = mode) }}"
-                                            class="btn btn-sm btn-outline-primary me-1" title="Edit Event">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
+                                <!-- Like button and action buttons -->
+                                <div class="card-footer bg-white border-0 pb-3 d-flex justify-content-between align-items-center">
+                                    <!-- Like button - only shown for public journeys -->
+                                    <div>
+                                        {% if journey.status == 'public' %}
+                                        <button class="btn btn-sm btn-like"
+                                                data-event-id="{{ event.event_id }}"
+                                                data-is-authenticated="{% if session.get('loggedin') %}true{% else %}false{% endif %}">
+                                            <i class="far fa-heart me-1"></i>
+                                            <span class="like-count">0</span>
+                                        </button>
+                                        {% else %}
+                                        <!-- Placeholder div to maintain layout -->
+                                        <div></div>
                                         {% endif %}
-                                        </div>
+                                    </div>
 
+                                    <!-- Edit/Delete buttons -->
+                                    <div>
+                                        {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
+                                            <button class="btn btn-sm btn-outline-danger delete-event-btn"
+                                                   title="Delete Event"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#deleteEventModal"
+                                                   data-journey-id="{{ journey.journey_id }}"
+                                                   data-event-id="{{ event.event_id }}"
+                                                   data-event-title="{{ event.title }}"
+                                                   data-mode="{{ mode }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                        {% if (mode== 'all' and journey.user_id == user_id) or (mode== 'public' and session['role'] != 'traveller')%}
+                                        <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode = mode) }}"
+                                        class="btn btn-sm btn-outline-primary me-1" title="Edit Event">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -230,16 +248,15 @@
                         <div class="col-6 pe-4 text-end">
                             <div class="card border-0 shadow-sm mb-3">
                                 <div class="card-body">
-<h5 class="card-title fw-bold mb-0" style="word-wrap: break-word; overflow-wrap: break-word;">{{ event.title }}</h5>
-                                {% if event.location %}
-                                    <div class="mt-2 mb-2">
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        {{ event.location }}
-                                    </div>
-                                {% endif %}
+                                    <h5 class="card-title fw-bold mb-0" style="word-wrap: break-word; overflow-wrap: break-word;">{{ event.title }}</h5>
+                                    {% if event.location %}
+                                        <div class="mt-2 mb-2">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            {{ event.location }}
+                                        </div>
+                                    {% endif %}
 
                                     <p class="card-text">{{ event.description }}</p>
-
                                 </div>
 
                                 <!-- Event photo -->
@@ -252,28 +269,45 @@
                                 </div>
                                 {% endif %}
 
-                                <div class="me-auto text-end mt-4 ms-4 mb-4">
-                                            <!-- Both buttons as small icon buttons -->
-                                            {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
-                                                <button class="btn btn-sm btn-outline-danger delete-event-btn me-1"
-                                                       title="Delete Event"
-                                                       data-bs-toggle="modal"
-                                                       data-bs-target="#deleteEventModal"
-                                                       data-journey-id="{{ journey.journey_id }}"
-                                                       data-event-id="{{ event.event_id }}"
-                                                       data-event-title="{{ event.title }}"
-                                                       data-mode="{{ mode }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            {% endif %}
-                                            {% if journey.user_id == user_id or (mode== 'public' and session['role'] != 'traveller')%}
-                                                <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode=mode) }}"
-                                                class="btn btn-sm btn-outline-primary" title="Edit Event">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            {% endif %}
-                                        </div>
+                                <!-- Like button and action buttons -->
+                                <div class="card-footer bg-white border-0 pb-3 d-flex justify-content-between align-items-center">
+                                    <!-- Like button - only shown for public journeys -->
+                                    <div>
+                                        {% if journey.status == 'public' %}
+                                        <button class="btn btn-sm btn-like"
+                                                data-event-id="{{ event.event_id }}"
+                                                data-is-authenticated="{% if session.get('loggedin') %}true{% else %}false{% endif %}">
+                                            <i class="far fa-heart me-1"></i>
+                                            <span class="like-count">0</span>
+                                        </button>
+                                        {% else %}
+                                        <!-- Placeholder div to maintain layout -->
+                                        <div></div>
+                                        {% endif %}
+                                    </div>
 
+                                    <!-- Edit/Delete buttons -->
+                                    <div>
+                                        {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}
+                                            <button class="btn btn-sm btn-outline-danger delete-event-btn me-1"
+                                                   title="Delete Event"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#deleteEventModal"
+                                                   data-journey-id="{{ journey.journey_id }}"
+                                                   data-event-id="{{ event.event_id }}"
+                                                   data-event-title="{{ event.title }}"
+                                                   data-mode="{{ mode }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                        {% if journey.user_id == user_id or (mode== 'public' and session['role'] != 'traveller')%}
+                                            <a href="{{ url_for('edit_event', journey_id=journey.journey_id, event_id=event.event_id, mode=mode) }}"
+                                            class="btn btn-sm btn-outline-primary" title="Edit Event">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -437,6 +471,76 @@
             });
         });
 
+        // Initialize like buttons
+        const likeButtons = document.querySelectorAll('.btn-like');
+
+        // Initialize each like button
+        likeButtons.forEach(button => {
+            const eventId = button.getAttribute('data-event-id');
+            const isAuthenticated = button.getAttribute('data-is-authenticated') === 'true';
+            const likeCount = button.querySelector('.like-count');
+            const heartIcon = button.querySelector('i');
+
+            // Get initial like status and count
+           fetch(`/api/reaction/status?target_type=event&target_id=${eventId}&reaction_type=like`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update like count
+                            likeCount.textContent = data.count;
+
+                            // Update heart icon
+                            if (data.is_active) {
+                                heartIcon.classList.remove('far');
+                                heartIcon.classList.add('fas');
+                                heartIcon.classList.add('text-danger');
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error fetching like status:', error));
+
+            // Add click event listener
+            button.addEventListener('click', function() {
+                if (!isAuthenticated) {
+                    // Redirect to login page
+                    window.location.href = "{{ url_for('login') }}";
+                    return;
+                }
+
+                // Toggle like
+                fetch('/api/reaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        target_type: 'event',
+                        target_id: eventId,
+                        reaction_type: 'like'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update like count
+                        likeCount.textContent = data.count;
+
+                        // Toggle heart icon
+                        if (data.is_active) {
+                            heartIcon.classList.remove('far');
+                            heartIcon.classList.add('fas');
+                            heartIcon.classList.add('text-danger');
+                        } else {
+                            heartIcon.classList.remove('fas');
+                            heartIcon.classList.remove('text-danger');
+                            heartIcon.classList.add('far');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error toggling like:', error));
+            });
+        });
+
         // Add hover effect for editable locations
         const editableLocations = document.querySelectorAll('.location-editable');
 
@@ -562,6 +666,26 @@
         });
     }
 });
+
+// Add CSS for like button states
+document.head.insertAdjacentHTML('beforeend', `
+<style>
+    .btn-like {
+        border: none;
+        background: transparent;
+        transition: transform 0.2s;
+    }
+    .btn-like:hover {
+        transform: scale(1.1);
+    }
+    .btn-like .fas.fa-heart {
+        color: #e55b4c;
+    }
+    .btn-like .far.fa-heart {
+        color: #777;
+    }
+</style>
+`);
 </script>
 
 {% endblock %}

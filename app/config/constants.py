@@ -3,6 +3,7 @@ SESSION_LOGGED_IN = 'loggedin'
 
 HTTP_METHOD_POST = 'POST'
 HTTP_METHOD_GET = 'GET'
+HTTP_METHOD_DELETE = 'DELETE'
 
 # Role to new users upon registration.
 USER_ROLE_TRAVELLER = 'traveller'
