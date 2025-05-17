@@ -477,7 +477,7 @@ def follow_journey(journey_id):
             return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
 
         # Insert the follow relationship into the database
-        cursor.execute("INSERT INTO user_follows (user_id, followed_id) VALUES (%s, %s)", (user_id, journey_id))
+        cursor.execute("INSERT INTO user_follows (user_id, followed_id, follow_type) VALUES (%s, %s, 'journey')", (user_id, journey_id))
         flash('You are now following this journey.', constants.FLASH_MESSAGE_SUCCESS)
         return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
 
