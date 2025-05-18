@@ -3,14 +3,17 @@ SESSION_LOGGED_IN = 'loggedin'
 
 HTTP_METHOD_POST = 'POST'
 HTTP_METHOD_GET = 'GET'
+HTTP_METHOD_DELETE = 'DELETE'
 
 # Role to new users upon registration.
 USER_ROLE_TRAVELLER = 'traveller'
 USER_ROLE_EDITOR = 'editor'
 USER_ROLE_ADMIN = 'admin'
+USER_ROLE_MODERATOR = 'moderator'
 
 # User information fields
-USER_ID = 'user_id'  # Unique identifier for the user
+USER_ID = 'user_id'
+FOLLOWED_ID = 'followed_id'
 USERNAME = 'username' 
 USER_ROLE = 'role'
 EMAIL = 'email'
@@ -65,6 +68,7 @@ URL_HOME = 'home'
 URL_ROOT = 'root'
 URL_ANNOUNCEMENTS = 'announcements_list'
 URL_DEPARTURE_BOARD = 'departure_board'
+URL_HIDDEN_JOURNEY = 'hidden_journeys'
 URL_SUBSCRIPTION = 'subscription'
 
 # Template file names
@@ -98,7 +102,7 @@ TEMPLATE_DELETE_EVENT = 'delete_event.html'
 
 # Announcement templates
 TEMPLATE_ANNOUNCEMENTS = 'announcements.html'
-TEMPLATE_ADD_ANNOUNCEMENTS = 'add_announcement.html'
+TEMPLATE_ADD_ANNOUNCEMENT = 'add_announcement.html'
 TEMPLATE_VIEW_ANNOUNCEMENTS = 'view_announcement.html'
 
 # Departure Board templates
@@ -143,6 +147,8 @@ JOURNEY_TEXT = 'journey_text' # including title & description
 REQUEST_MODE = 'mode'
 MODE_PUBLIC='public'
 MODE_ALL = 'all'
+MODE_DEPARTURE_BOARD = 'departure_board'
+MODE_SUBSCRIBE= 'subscribe'
 
 # Announcement information fields
 ANNOUNCEMENT_ID = 'announcement_id'

@@ -10,12 +10,25 @@ from app.db import db
 @app.route('/subscription')
 @login_required
 def subscription():
+    user_id = session[constants.USER_ID]
+    user_role = session[constants.USER_ROLE]
+    logged_in = session[constants.SESSION_LOGGED_IN]
+
+    # Query subscription details
     with db.get_cursor() as cursor:
         cursor.execute("""
             SELECT * FROM subscriptions WHERE is_admin_grantable = %s 
         """, (constants.USER_IS_ADMIN_GRANTABLE_NO,))
         subscriptions = cursor.fetchall()
-    return render_template(constants.TEMPLATE_SUBSCRIPTION, subscriptions=subscriptions)
+    
+    # Check if user has used free trial
+    with db.get_cursor() as cursor:
+        cursor.execute("""
+            SELECT subscription_status, is_trial_used FROM USERS WHERE user_id = %s 
+        """, (user_id,))
+        subDetails = cursor.fetchone()
+        
+    return render_template(constants.TEMPLATE_SUBSCRIPTION, subscriptions=subscriptions, subDetails = subDetails, user_role = user_role, logged_in = logged_in)
 
 @app.route('/start_trial')
 @login_and_role_required([constants.USER_ROLE_TRAVELLER])

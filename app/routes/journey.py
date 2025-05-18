@@ -18,6 +18,10 @@ def myjourney():
     user_id = session[constants.USER_ID]
     profile = user_profile_sidebar(user_id)
 
+    # if personal_descprition is None, set it to empty string
+    if profile[constants.USER_PERSONAL_DESCRIPTION] is None:
+        profile[constants.USER_PERSONAL_DESCRIPTION] = ''
+
     with db.get_cursor() as cursor:
         cursor.execute('''
                        SELECT journey_id, title, description, status, is_hidden, start_date, update_date 
@@ -397,11 +401,13 @@ def search_public_journey():
 @app.route('/journeys/hidden', methods=[constants.HTTP_METHOD_GET])
 @login_and_role_required([constants.USER_ROLE_EDITOR, constants.USER_ROLE_ADMIN])
 def hidden_journeys():
+    user_role = session[constants.USER_ROLE]
+    
     # Query to get all hidden journeys ordered by most recently updated
     with db.get_cursor() as cursor:
         cursor.execute("""
             SELECT j.journey_id, j.title, j.description, j.update_date, j.user_id,
-                   u.username, u.first_name, u.last_name 
+                u.username, u.status, u.shareable
             FROM journeys j
             JOIN users u ON j.user_id = u.user_id
             WHERE j.is_hidden = 1
@@ -424,8 +430,24 @@ def hidden_journeys():
                 groupedJourneys[username] = []
             groupedJourneys[username].append(journey)
 
-        print('grouped_journeys: ', groupedJourneys)
-        return render_template(constants.TEMPLATE_HIDDEN_JOURNEY, groupedJourneys=groupedJourneys)
+        # count the total hidden journey of the user
+        hiddenCounts = {}
+        for username, journeys in groupedJourneys.items():
+            hiddenCounts[username] = len(journeys)
+
+        return render_template(constants.TEMPLATE_HIDDEN_JOURNEY, groupedJourneys = groupedJourneys, hiddenCounts = hiddenCounts, user_role = user_role)
+    
+    
+@app.route('/user/<int:user_id>/update_shareable', methods=[constants.HTTP_METHOD_POST])
+@login_and_role_required([constants.USER_ROLE_EDITOR, constants.USER_ROLE_ADMIN])
+def update_user_shareable(user_id):
+    shareable = request.form[constants.USER_SHAREABLE]
+
+    with db.get_cursor() as cursor:
+        cursor.execute("UPDATE users SET shareable = %s WHERE user_id = %s;", (shareable, user_id))
+        flash('Updated successfully.', constants.FLASH_MESSAGE_SUCCESS)
+
+    return redirect(url_for(constants.URL_HIDDEN_JOURNEY))
 
 
 @app.route('/journey/<int:journey_id>/follow', methods=[constants.HTTP_METHOD_POST])
@@ -436,36 +458,43 @@ def follow_journey(journey_id):
     mode = request.args.get(constants.REQUEST_MODE)
 
     with db.get_cursor() as cursor:
-        # you can't unfollow your own journey
-        cursor.execute("SELECT user_id FROM journeys WHERE journey_id = %s", (journey_id,))
-        journey_owner = cursor.fetchone()
-        if journey_owner and journey_owner['user_id'] == user_id:
-            flash('You cannot unfollow your own journey.', constants.FLASH_MESSAGE_DANGER)
-            return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
-
-        # Check if the journey exists
-        cursor.execute("SELECT journey_id FROM journeys WHERE journey_id = %s", (journey_id,))
+        # Get journey information, including the owner
+        cursor.execute("SELECT journey_id, user_id FROM journeys WHERE journey_id = %s", (journey_id,))
         journey = cursor.fetchone()
 
+        # Check if the journey exists
         if not journey:
             flash('Journey not found.', constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for(constants.URL_PUBLIC_JOURNEY))
 
-        # Check if the user is already following the journey
-        cursor.execute("SELECT * FROM user_follows WHERE user_id = %s AND followed_id = %s", (user_id, journey_id))
-        existing_follow = cursor.fetchone()
-
-        if existing_follow:
-            flash('You are already following this journey.', constants.FLASH_MESSAGE_DANGER)
+        # Prevent users from following their own journey
+        if journey['user_id'] == user_id:
+            flash('You cannot follow your own journey.', constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
 
-        # Insert the follow relationship into the database
-        cursor.execute("INSERT INTO user_follows (user_id, followed_id) VALUES (%s, %s)", (user_id, journey_id))
+        # Check if the user is already following this journey
+        cursor.execute("""
+            SELECT 1 FROM user_follows 
+            WHERE user_id = %s AND followed_id = %s AND follow_type = 'journey'
+        """, (user_id, journey_id))
+        already_following = cursor.fetchone()
+
+        if already_following:
+            flash('You are already following this journey.', constants.FLASH_MESSAGE_INFO)
+            return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
+
+        # Insert follow relationship into the database
+        cursor.execute("""
+            INSERT INTO user_follows (user_id, followed_id, follow_type)
+            VALUES (%s, %s, 'journey')
+        """, (user_id, journey_id))
+
         flash('You are now following this journey.', constants.FLASH_MESSAGE_SUCCESS)
         return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
 
 
-@app.route('/journey/<int:journey_id>/unfollow', methods=[constants.HTTP_METHOD_POST])
+
+@app.route('/journey/<int:journey_id>/unfollow', methods=['GET'])
 @subscription_required
 @login_required
 def unfollow_journey(journey_id):
@@ -473,7 +502,7 @@ def unfollow_journey(journey_id):
     mode = request.args.get(constants.REQUEST_MODE)
 
     with db.get_cursor() as cursor:
-        # you can't unfollow your own journey
+        # Prevent users from unfollowing their own journey
         cursor.execute("SELECT user_id FROM journeys WHERE journey_id = %s", (journey_id,))
         journey_owner = cursor.fetchone()
         if journey_owner and journey_owner['user_id'] == user_id:
@@ -483,21 +512,27 @@ def unfollow_journey(journey_id):
         # Check if the journey exists
         cursor.execute("SELECT journey_id FROM journeys WHERE journey_id = %s", (journey_id,))
         journey = cursor.fetchone()
-
         if not journey:
             flash('Journey not found.', constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for(constants.URL_PUBLIC_JOURNEY))
 
-        # Check if the user is following the journey
-        cursor.execute("SELECT * FROM user_follows WHERE user_id = %s AND followed_id = %s", (user_id, journey_id))
+        # Check if the user is following this journey
+        cursor.execute("""
+            SELECT * FROM user_follows
+            WHERE user_id = %s AND followed_id = %s AND follow_type = 'journey'
+        """, (user_id, journey_id))
         existing_follow = cursor.fetchone()
-
         if not existing_follow:
             flash('You are not following this journey.', constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
 
-        # Delete the follow relationship from the database
-        cursor.execute("DELETE FROM user_follows WHERE user_id = %s AND followed_id = %s", (user_id, journey_id))
+        # Remove the follow relationship from the database
+        cursor.execute("""
+            DELETE FROM user_follows
+            WHERE user_id = %s AND followed_id = %s AND follow_type = 'journey'
+        """, (user_id, journey_id))
+
         flash('You have unfollowed this journey.', constants.FLASH_MESSAGE_SUCCESS)
         return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
+
 

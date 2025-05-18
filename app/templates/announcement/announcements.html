@@ -10,6 +10,14 @@
     <h2 class="text-center align-middle fw-bold py-2">Announcements</h2>
     <p class="text-center align-middle lead text-muted">See what's new in our community — important announcements, updates, and more.</p>
 
+    {% if user_role != 'traveller' %}
+    <div class="d-flex justify-content-end" style="width: 100%;">
+        <div class="mt-4">
+            <a href="{{ url_for('add_announcement') }}" class="btn btn-primary btn-lg btn-add"><i class="fa fa-plus me-2"></i>Add New Announcement</a>
+        </div>
+    </div>
+    {% endif %}
+
     {% if announcementsList %}
     <!-- Announcement List -->
     <div class="table-responsive py-4">
@@ -25,7 +33,7 @@
             <input type="hidden" id="announcement_id" name="announcement_id" value="{{ announcement.announcement_id }}">
             <tbody>
                     <tr>
-                        <td class="p-3"><a href="{{ url_for('announcements_detail', announcement_id = announcement.announcement_id) }}" style="font-weight: bold;">{{ announcement['title'] }}</a></td>
+                        <td class="p-3"><a href="{{ url_for('announcements_detail', announcement_id = announcement.announcement_id) }}" style="font-weight: bold;" class="text-link">{{ announcement['title'] }}</a></td>
                         <td class="p-3">{{ announcement['created_time'].strftime('%d %b %Y') }}</td>
                     </tr>
             </tbody>

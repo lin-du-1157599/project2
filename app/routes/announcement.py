@@ -17,10 +17,12 @@ from app.utils.validators import validate_announcement
 @app.route('/announcements', methods=[constants.HTTP_METHOD_GET])
 @login_required
 def announcements_list():
+    user_role = session[constants.USER_ROLE]
+
     with db.get_cursor() as cursor:
         cursor.execute("SELECT * FROM announcements ORDER BY created_time DESC")
         announcementsList = cursor.fetchall()
-        return render_template(constants.TEMPLATE_ANNOUNCEMENTS, announcementsList = announcementsList)
+        return render_template(constants.TEMPLATE_ANNOUNCEMENTS, announcementsList = announcementsList, user_role = user_role)
 
 @app.route('/announcements/view/<int:announcement_id>', methods=[constants.HTTP_METHOD_GET])
 @login_required
@@ -31,16 +33,15 @@ def announcements_detail(announcement_id):
                        WHERE announcement_id = %s
                        """, (announcement_id,))
         announcement = cursor.fetchone()
-        print('announcement title: ', announcement['announcement_id'])
-        print('announcement : ', announcement)
+
         return render_template(constants.TEMPLATE_VIEW_ANNOUNCEMENTS, announcement = announcement)
 
 @app.route('/announcements/add', methods=[constants.HTTP_METHOD_GET, constants.HTTP_METHOD_POST])
 @role_required(constants.USER_ROLE_ADMIN)
-def add_announcements():
+def add_announcement():
     user_id = session[constants.USER_ID]
     if request.method == constants.HTTP_METHOD_GET:
-        return render_template(constants.TEMPLATE_ADD_ANNOUNCEMENTS)
+        return render_template(constants.TEMPLATE_ADD_ANNOUNCEMENT)
     print (request.form)
     
     title = request.form[constants.TITLE]
@@ -52,7 +53,7 @@ def add_announcements():
     if not is_valid:
         for error in errors:
             flash(error, constants.FLASH_MESSAGE_DANGER)
-        return render_template(constants.TEMPLATE_ADD_ANNOUNCEMENTS, title = title, content = content)
+        return render_template(constants.TEMPLATE_ADD_ANNOUNCEMENT, title = title, content = content)
 
     with db.get_cursor() as cursor:
         cursor.execute("""

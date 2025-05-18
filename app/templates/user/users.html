@@ -1,16 +1,19 @@
-{% extends 'userbase.html' %}
+{% extends "base/userbase.html" %}
 {% block title %}User Management{% endblock %}
 
 {# Set the active page to be highlighted in the navigation bar. #}
+{% set active_page = 'all_users' %}
+{% set active_page = 'staff_users' %}
+{% set active_page = 'restricted_users' %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
 <!-- Users list switch tab -->
-<div class="d-flex justify-content-center gap-3 mb-4">
+<div class="d-flex justify-content-center gap-3 mb-2">
     <a href="{{ url_for('all_users') }}" class="btn btn-outline-primary {% if view_type == 'all' %}active{% endif %}">All Users</a>
     <a href="{{ url_for('system_users') }}" class="btn btn-outline-primary {% if view_type == 'staff' %}active{% endif %}">Admin/Editor</a>
-    <a href="{{ url_for('restricted_users') }}" class="btn btn-outline-danger {% if view_type == 'restricted' %}active{% endif %}">Restricted</a>
+    <a href="{{ url_for('restricted_users') }}" class="btn btn-outline-primary {% if view_type == 'restricted' %}active{% endif %}">Restricted</a>
 </div>
   
 <section class="container col-lg-10 col-md-10 col-sm-12 mx-auto p-5">
@@ -114,8 +117,8 @@
                             {% endif %}
                         </td>
                         <td class="p-3 text-center">
-                            {% if users.status == 'active' %}<span class="badge bg-success">Active</span>
-                            {% else %} <span class="badge bg-danger">Banned</span>
+                            {% if users.status == 'active' %}<span class="badge bg-status-active">Active</span>
+                            {% else %} <span class="badge bg-status-banned">Banned</span>
                             {% endif %}
                         </td>
                         <td class="p-3 text-center">
