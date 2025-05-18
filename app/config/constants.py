@@ -147,6 +147,8 @@ JOURNEY_TEXT = 'journey_text' # including title & description
 REQUEST_MODE = 'mode'
 MODE_PUBLIC='public'
 MODE_ALL = 'all'
+MODE_DEPARTURE_BOARD = 'departure_board'
+MODE_SUBSCRIBE= 'subscribe'
 
 # Announcement information fields
 ANNOUNCEMENT_ID = 'announcement_id'
