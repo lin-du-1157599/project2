@@ -276,19 +276,15 @@
 									<a class="nav-link dropdown-toggle{{ ' active' if active_page in ['hidden_journey'] else '' }}" href="#" id="staffToolsDropdownMenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 										Staff Tools
 									</a>
-			<ul class="dropdown-menu" aria-labelledby="userDropdownMenu">
+									<ul class="dropdown-menu" aria-labelledby="userDropdownMenu">
 										<li><a class="dropdown-item" href="{{ url_for('hidden_journeys') }}">Hidden Journeys</a></li>
+										 <!-- Moderation -->
+										 <li class="dropdown-item"><a class="nav-link{{ ' active' if active_page == 'reported_comments' else '' }}" href="{{ url_for('reported_comments') }}">Moderation</a></li>
 									</ul>
+
 								</h4>
 							</li>
 						{% endif %}
-						
-                          <!-- Moderation -->
-                        {% if session['role'] in ['admin', 'editor', 'moderator'] %}
-                            <li class="nav-item p-2">
-                                <h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'reported_comments' else '' }}" href="{{ url_for('reported_comments') }}">Moderation</a></h4>
-                            </li>
-                        {% endif %}
 
                         <!-- Departure Board -->
                         {% if session['subscription_status'] != 'Free' %}
