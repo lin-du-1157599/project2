@@ -165,11 +165,12 @@ def edit_user():
                                  SELECT EXISTS(SELECT 1
                                                FROM user_follows
                                                WHERE user_id = %s
-                                                 AND followed_id = %s) AS is_following;
+                                                 AND followed_id = %s
+                                                 AND follow_type = 'user') AS is_following_user;
                                  """, (current_user_id, user_id))
 
                   result = cursor.fetchone()
-                  is_following = bool(result['is_following'])
+                  is_following = bool(result['is_following_user'])
 
           return render_template(
               constants.TEMPLATE_USER_EDIT,

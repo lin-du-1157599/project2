@@ -449,16 +449,43 @@ def remove_image():
 @login_required
 def follow_user():
     user_id = session.get(constants.USER_ID)
-    followed_id = request.args.get(constants.FOLLOWED_ID)
 
-    # can't follow yourself
-    if str(user_id) == str(followed_id):
+    # Try get followed_id from form data or URL query
+    followed_id_str = request.form.get(constants.FOLLOWED_ID) or request.args.get(constants.FOLLOWED_ID)
+    try:
+        followed_id = int(followed_id_str)
+    except (TypeError, ValueError):
+        flash("Invalid user ID.", constants.FLASH_MESSAGE_DANGER)
+        return redirect(url_for('edit_user', user_id=user_id))
+
+    # Can't follow yourself
+    if user_id == followed_id:
         flash("You cannot follow yourself.", constants.FLASH_MESSAGE_DANGER)
         return redirect(url_for('edit_user', user_id=followed_id))
 
     with db.get_cursor() as cursor:
-        cursor.execute("INSERT INTO user_follows (user_id, followed_id, follow_type) VALUES (%s, %s, %s);", (user_id, followed_id, 'user'))
+        # Check if followed user exists
+        cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (followed_id,))
+        if not cursor.fetchone():
+            flash("User does not exist.", constants.FLASH_MESSAGE_DANGER)
+            return redirect(url_for('edit_user', user_id=user_id))
 
+        # Check if already following
+        cursor.execute("""
+            SELECT 1 FROM user_follows
+            WHERE user_id = %s AND followed_id = %s AND follow_type = 'user'
+        """, (user_id, followed_id))
+        if cursor.fetchone():
+            flash("You are already following this user.", constants.FLASH_MESSAGE_INFO)
+            return redirect(url_for('edit_user', user_id=followed_id))
+
+        # Insert follow relationship
+        cursor.execute("""
+            INSERT INTO user_follows (user_id, followed_id, follow_type)
+            VALUES (%s, %s, 'user')
+        """, (user_id, followed_id))
+
+    flash("You are now following this user.", constants.FLASH_MESSAGE_SUCCESS)
     return redirect(url_for('edit_user', user_id=followed_id))
 
 @app.route('/user/unfollow', methods=[constants.HTTP_METHOD_GET])
@@ -468,12 +495,16 @@ def unfollow_user():
     user_id = session.get(constants.USER_ID)
     followed_id = request.args.get(constants.FOLLOWED_ID)
 
-    # can't unfollow yourself
+    # Can't unfollow yourself
     if str(user_id) == str(followed_id):
         flash("You cannot unfollow yourself.", constants.FLASH_MESSAGE_DANGER)
         return redirect(url_for('edit_user', user_id=followed_id))
 
     with db.get_cursor() as cursor:
-        cursor.execute("DELETE FROM user_follows WHERE user_id = %s AND followed_id = %s;", (user_id, followed_id))
+        # Delete only if follow_type is 'user'
+        cursor.execute(
+            "DELETE FROM user_follows WHERE user_id = %s AND followed_id = %s AND follow_type = 'user';",
+            (user_id, followed_id)
+        )
 
     return redirect(url_for('edit_user', user_id=followed_id))
