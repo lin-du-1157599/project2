@@ -156,5 +156,18 @@ VIEW_TYPE_RESTRICTED = 'restricted'
 
 #subscriptions information fields
 SUBSCRIPTION_ID = 'subscription_id'
+SUBSCRIPTION_DURATION_MONTHS = 'duration_months'
 
 SUBSCRIPTIONS_NAME_FREE_TRIAL = 'Free Trial'
+SUBSCRIPTIONS_DURATION_MONTHS_ONE = 1
+
+# subscription_payments information fields
+PAYMENT_ID = 'payment_id'
+PAYMENT_BILLING_COUNTRY = 'billing_country'
+PAYMENT_AMOUNT_PAID = 'amount_paid'
+PAYMENT_GST_AMOUNT = 'gst_amount'
+PAYMENT_CURRENCY = 'currency'
+PAYMENT_CARD_NUMBER = 'card_number'
+PAYMENT_EXPIRY_DATE = 'expiry_date'
+PAYMENT_CVV = 'cvv'
+PAYMENT_USER_SUBSCRIPTION_ID = 'user_subscription_id'
