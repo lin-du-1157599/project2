@@ -48,7 +48,7 @@
                             </div>
 
                             {% if my_event.follow_types and my_event.follow_types|length > 0 %}
-                            <div class="text-end pt-5">
+                            <div class="text-end pt-3">
                                 {% if 'journey' in my_event.follow_types %}
                                 <div>
                                     <a href="{{ url_for('view_journey', journey_id=my_event.journey_id, mode='public') }}"
@@ -61,7 +61,12 @@
                                 {% if 'user' in my_event.follow_types %}
                                 <div class="mt-2">
                                     <a href="{{ url_for('edit_user', user_id=my_event.creator_user_id) }}"
-                                       class="btn btn-primary btn-sm">
+                                       class="btn btn-sm text-white
+          {% if my_event.role == 'admin' %}bg-warning
+          {% elif my_event.role == 'editor' %}bg-info
+          {% elif my_event.role == 'moderator' %}bg-secondary
+          {% else %}bg-dark
+          {% endif %}">
                                         <i class="fas fa-user"></i> {{ my_event.username }}
                                     </a>
                                 </div>
@@ -142,7 +147,7 @@
                             </div>
 
                             {% if my_event.follow_types and my_event.follow_types|length > 0 %}
-                            <div class="text-start pt-5">
+                            <div class="text-start pt-3">
                                 {% if 'journey' in my_event.follow_types %}
                                 <div>
                                     <a href="{{ url_for('view_journey', journey_id=my_event.journey_id, mode='public') }}"
@@ -155,7 +160,12 @@
                                 {% if 'user' in my_event.follow_types %}
                                 <div class="mt-2">
                                     <a href="{{ url_for('edit_user', user_id=my_event.creator_user_id) }}"
-                                       class="btn btn-primary btn-sm">
+                                       class="btn btn-sm text-white
+          {% if my_event.role == 'admin' %}bg-warning
+          {% elif my_event.role == 'editor' %}bg-info
+          {% elif my_event.role == 'moderator' %}bg-secondary
+          {% else %}bg-dark
+          {% endif %}">
                                         <i class="fas fa-user"></i> {{ my_event.username }}
                                     </a>
                                 </div>
