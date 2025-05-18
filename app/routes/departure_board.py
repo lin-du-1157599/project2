@@ -94,11 +94,12 @@ def departure_board():
                          creator_user_id,
                          username,
                          role
-                ORDER BY update_date DESC; \
                 """
 
         cursor.execute(query, (user_id, user_id))
         events = cursor.fetchall()
+
+        events.sort(key=lambda e: e['start_time'])
 
         for e in events:
             e['follow_types'] = e['follow_types'].split(',') if e.get('follow_types') else []
