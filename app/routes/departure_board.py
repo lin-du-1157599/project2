@@ -21,10 +21,11 @@ def departure_board():
                                                 e.location,
                                                 e.event_image,
                                                 e.journey_id,
-                                                j.update_date, -- add update_date here
+                                                j.update_date,
                                                 j.title   AS journey_title,
                                                 u.user_id AS creator_user_id,
                                                 u.username,
+                                                u.role,
                                                 'journey' AS follow_type
                                          FROM user_follows uf
                                                   JOIN events e ON uf.followed_id = e.journey_id
@@ -44,10 +45,11 @@ def departure_board():
                                                     e.location,
                                                     e.event_image,
                                                     e.journey_id,
-                                                    j.update_date, -- add update_date here too
+                                                    j.update_date,
                                                     j.title   AS journey_title,
                                                     u.user_id AS creator_user_id,
                                                     u.username,
+                                                    u.role,
                                                     'user'    AS follow_type
                                              FROM user_follows uf
                                                       JOIN journeys j ON j.user_id = uf.followed_id
@@ -75,6 +77,7 @@ def departure_board():
                        journey_title,
                        creator_user_id,
                        username,
+                       role,
                        GROUP_CONCAT(DISTINCT follow_type) AS follow_types,
                        update_date
                 FROM combined
@@ -89,9 +92,9 @@ def departure_board():
                          journey_id,
                          journey_title,
                          creator_user_id,
-                         username
+                         username,
+                         role
                 ORDER BY update_date DESC; \
- \
                 """
 
         cursor.execute(query, (user_id, user_id))
