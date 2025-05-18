@@ -245,9 +245,6 @@
 				<div class="collapse navbar-collapse" id="navbarSupportedContent">
 					<ul class="navbar-nav me-auto ps-4 py-2">
 						<li class="nav-item py-2">
-							<h4 class="fw-bold m-0"><a class="nav-link{{' active' if active_page=='home' else ''}}" href="{% if session['role'] == 'traveller' %}{{ url_for('traveller_home') }}{% elif session['role'] == 'editor' %}{{ url_for('editor_home') }}{% elif session['role'] == 'admin' %}{{ url_for('admin_home') }}{% endif %}">Dashboard</a></h4>
-						</li>
-						<li class="nav-item py-2">
 							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'myjourney' else '' }}" href="{{ url_for('myjourney') }}">My Trips</a></h4>
 						</li>
 						<!-- public journeys -->
