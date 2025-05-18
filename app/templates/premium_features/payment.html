@@ -13,24 +13,25 @@
             </p>
 
             <form method="POST" action="{{ url_for('process_payment') }}">
-                <input type="hidden" name="subscription_id" value="{{ subscription.id }}">
+                <input type="hidden" name="subscription_id" value="{{ subscription.subscription_id }}">
+                <input type="hidden" name="duration_months" value="{{ subscription.duration_months }}">
 
                 <div class="mb-3">
                     <label for="card_number" class="form-label">Credit Card Number</label>
-                    <input type="text" class="form-control" id="card_number" name="card_number" placeholder="0000-0000-0000-0000" required pattern="(\d{4}-){3}\d{4}">
+                    <input type="text" class="form-control" id="card_number" value="{{ subscription.card_number }}" name="card_number" placeholder="0000-0000-0000-0000" required pattern="(\d{4}-){3}\d{4}" >
                     <div class="form-text">Use a fictitious card number like "0000-0000-0000-0000".</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="expiry_date" class="form-label">Expiry Date</label>
-                    <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YYYY" required pattern="(0[1-9]|1[0-2])\/\d{4}">
+                    <input type="text" class="form-control" id="expiry_date" value="{{ subscription.expiry_date }}" name="expiry_date" placeholder="MM/YYYY" required pattern="(0[1-9]|1[0-2])\/\d{4}">
                     <div class="form-text">Example: 01/2025</div>
                     <div id="expiry_error" style="color: red; font-size: 0.9em; margin-top: 4px;"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="cvv" class="form-label">CVV Security Code</label>
-                    <input type="text" class="form-control" id="cvv" name="cvv" placeholder="000" required pattern="\d{3}">
+                    <input type="text" class="form-control" id="cvv" value="{{ subscription.cvv }}" name="cvv" placeholder="000" required pattern="\d{3}">
                     <div class="form-text">Use a fictitious code like "000".</div>
                 </div>
 
