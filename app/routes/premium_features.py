@@ -64,8 +64,20 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
         conn = db.get_db()
         conn.autocommit = False
         cursor = conn.cursor(dictionary=True)
-        params = [subscription_status]
-        sql = "UPDATE users SET subscription_status = %s"
+
+        cursor.execute("""
+            SELECT  subscription_end_date, remaining_months FROM users WHERE user_id = %s
+        """, (session.get(constants.USER_ID), ))
+        user = cursor.fetchone()
+
+        sql = "UPDATE users SET subscription_status = %s, subscription_end_date = %s, remaining_months = %s"
+        subscription_end_date = user[constants.USER_SUBSCRIPTION_END_DATE]
+        if subscription_end_date is None:
+            subscription_end_date = date.today()
+        new_remaining_months = user.get(constants.USER_REMAINING_MONTHS) + duration_months
+        new_end_date = subscription_end_date + relativedelta(months=+duration_months)
+        params = [subscription_status, new_end_date, new_remaining_months]
+        
         if is_trial_used is not None:
             sql += ", is_trial_used = %s"
             params.append(is_trial_used)
