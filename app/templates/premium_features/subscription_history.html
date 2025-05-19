@@ -1,0 +1,169 @@
+{% extends "base/userbase.html" %}
+
+{% block title %}Subscription History{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<section class="container col-lg-10 col-md-10 col-sm-12 mx-auto p-5">
+    <!-- Page Title -->
+    <h2 class="text-center align-middle fw-bold py-2">Subscription History</h2>
+    <p class="text-center align-middle lead text-muted">View your past subscription plans and payment history.</p>
+
+    <!-- Success/error messages div -->
+    <div id="alert-container" style="display: none;" class="alert alert-dismissible fade show mb-4" role="alert">
+        <span id="alert-message"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Subscription History Table -->
+    <div class="table-responsive py-2">
+        <table class="table table-hover align-middle" style="border-radius: 20px;border: 1px solid #ddd;overflow: hidden;">
+            <thead class="table-light align-middle">
+                <tr>
+                    <th scope="col" class="p-3">Subscription Name</th>
+                    <th scope="col" class="p-3">Discount Percent</th>
+                    <th scope="col" class="p-3">is_admin_grantable</th>
+                    <th scope="col" class="p-3">Reason</th>
+                    <th scope="col" class="p-3">Reporter</th>
+                    <th scope="col" class="p-3">Reported At</th>
+                    <th scope="col" class="p-3">Status</th>
+                    <th scope="col" class="p-3">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reported_comments %}
+                <tr id="report-row-{{ report.report_id }}">
+                    <td class="p-3">{{ report.content }}</td>
+                    <td class="p-3">{{ report.event_title }}</td>
+                    <td class="p-3">{{ report.author_username }}</td>
+                    <td class="p-3"><span class="badge bg-warning text-dark">{{ report.reason|capitalize }}</span></td>
+                    <td class="p-3">{{ report.reporter_username }}</td>
+                    <td class="p-3">{{ report.report_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="p-3" id="status-{{ report.report_id }}">
+                        {% if report.review_action is none %}
+                            <span class="badge bg-secondary">Pending</span>
+                        {% elif report.review_action == 'hidden' %}
+                            <span class="badge bg-danger">Hidden</span>
+                        {% elif report.review_action == 'keep' %}
+                            <span class="badge bg-success">Kept</span>
+                        {% elif report.review_action == 'escalated' %}
+                            <span class="badge bg-warning">Escalated</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3" id="actions-{{ report.report_id }}">
+                        {% if report.review_action is none %}
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-success btn-sm me-1" title="Keep Comment"
+                                    onclick="reviewComment({{ report.report_id }}, 'keep')">
+                                <i class="fas fa-check"></i> Keep
+                            </button>
+                            <button class="btn btn-danger btn-sm me-1" title="Hide Comment"
+                                    onclick="reviewComment({{ report.report_id }}, 'hidden')">
+                                <i class="fas fa-ban"></i> Hide
+                            </button>
+                            {% if session['role'] == 'moderator' %}
+                            <button class="btn btn-warning btn-sm" title="Escalate Comment"
+                                    onclick="reviewComment({{ report.report_id }}, 'escalated')">
+                                <i class="fas fa-arrow-up"></i> Escalate
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                            <span class="text-muted">Reviewed by {{ report.reviewer_username }}
+                            {% if report.reviewed_at %}
+                            on {{ report.reviewed_at.strftime('%Y-%m-%d') }}
+                            {% endif %}
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted p-3">No reported comments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+// Function to review a comment
+function reviewComment(reportId, action) {
+    // Show loading state
+    const actionsElement = document.getElementById(`actions-${reportId}`);
+    const originalContent = actionsElement.innerHTML;
+    actionsElement.innerHTML = '<div class="spinner-border text-primary spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
+
+    // Prepare the request data
+    const data = {
+        report_id: reportId,
+        action: action
+    };
+
+    // Send API request
+    fetch('/api/moderation/review_comment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showAlert('success', data.message);
+
+            // Update status badge
+            const statusElement = document.getElementById(`status-${reportId}`);
+            let badgeHtml = '';
+
+            if (action === 'keep') {
+                badgeHtml = '<span class="badge bg-success">Kept</span>';
+            } else if (action === 'hidden') {
+                badgeHtml = '<span class="badge bg-danger">Hidden</span>';
+            } else if (action === 'escalated') {
+                badgeHtml = '<span class="badge bg-warning">Escalated</span>';
+            }
+
+            statusElement.innerHTML = badgeHtml;
+
+            // Update actions cell - show reviewed by current user
+            const username = '{{ session.username }}';
+            const today = new Date().toISOString().slice(0, 10);
+            actionsElement.innerHTML = `<span class="text-muted">Reviewed by ${username} on ${today}</span>`;
+        } else {
+            // Show error message and restore original content
+            showAlert('danger', data.message || 'An error occurred');
+            actionsElement.innerHTML = originalContent;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'Network error occurred');
+        actionsElement.innerHTML = originalContent;
+    });
+}
+
+// Function to show alerts
+function showAlert(type, message) {
+    const alertContainer = document.getElementById('alert-container');
+    const alertMessage = document.getElementById('alert-message');
+
+    // Set alert type and message
+    alertContainer.className = `alert alert-${type} alert-dismissible fade show mb-4`;
+    alertMessage.textContent = message;
+
+    // Show the alert
+    alertContainer.style.display = 'block';
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alertContainer);
+        bsAlert.close();
+    }, 5000);
+}
+</script>
+{% endblock %}
