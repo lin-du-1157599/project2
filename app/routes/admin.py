@@ -192,7 +192,7 @@ def edit_user():
                     (user_id,))
                user = cursor.fetchone()
 
-          return render_template(constants.TEMPLATE_USER_EDIT, user=user, user_id=user_id)
+          return render_template(constants.TEMPLATE_USER_EDIT, user=user, user_id=user_id, profile_update_successful=True)
 
 
 @app.route('/users/update', methods=[constants.HTTP_METHOD_GET, constants.HTTP_METHOD_POST])
