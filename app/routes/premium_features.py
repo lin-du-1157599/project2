@@ -100,6 +100,7 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
 
         flash(f"Your {duration_months}-month{'s' if duration_months != 1 else ''} free trial has started!", constants.FLASH_MESSAGE_SUCCESS)
         conn.commit()
+        session[constants.USER_SUBSCRIPTION_END_DATE] = new_end_date.strftime('%d/%m/%Y')
     except Exception as e:
         conn.rollback()
         raise
@@ -165,3 +166,8 @@ def process_payment():
         print("Error:", e)
         return render_template(constants.TEMPLATE_PAYMENT, subscription=subscription)
     return redirect(url_for(constants.URL_SUBSCRIPTION))
+
+@app.route('/subscription_history')
+@login_required
+def subscription_history():
+    return render_template('subscription_history.html')
