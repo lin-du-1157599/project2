@@ -30,6 +30,8 @@ USER_PERSONAL_DESCRIPTION='personal_description'
 USER_SUBSCRIPTION_STATUS = 'subscription_status'
 USER_IS_TRIAL_USED = 'is_trial_used'
 USER_SHAREABLE = 'shareable'
+USER_SUBSCRIPTION_END_DATE = 'subscription_end_date'
+USER_REMAINING_MONTHS = 'remaining_months'
 
 DEFAULT_USER_ROLE = 'traveller'
 DEFAULT_STATUS = 'active'
