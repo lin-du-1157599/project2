@@ -102,8 +102,10 @@ def login():
                         session[constants.USER_SUBSCRIPTION_STATUS] = account[constants.USER_SUBSCRIPTION_STATUS]
                         session[constants.USER_IS_TRIAL_USED] = account[constants.USER_IS_TRIAL_USED]
                         session[constants.USER_PROFILE_IMAGE] = account[constants.USER_PROFILE_IMAGE]
-                        session[constants.USER_SUBSCRIPTION_END_DATE] = account[constants.USER_SUBSCRIPTION_END_DATE].strftime('%d/%m/%Y')
 
+                        subscription_end_date = account[constants.USER_SUBSCRIPTION_END_DATE]
+                        if subscription_end_date is not None:
+                            session[constants.USER_SUBSCRIPTION_END_DATE] = subscription_end_date.strftime('%d/%m/%Y')
 
                         return redirect(user_home_url())
                     else:
