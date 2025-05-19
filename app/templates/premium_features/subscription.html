@@ -29,7 +29,7 @@
                 <!-- Center: Switch -->
                 <div class="d-flex justify-content-center align-items-center">
                 <input class="form-check-input" type="checkbox" role="switch"
-                    id="gstSwitch" name="gst_switch" style="transform: scale(2.8); margin: 0 1.6rem; border: none"/>
+                    id="gstSwitch" name="gst_switch" style="transform: scale(2.4); margin: 0 1.2rem; border: 0.4px solid #33333320;"/>
                 </div>
 
                 <!-- Right: Excluding GST price -->
@@ -43,13 +43,12 @@
         </div>
         
         <!-- Subscription Plans - Free -->
-        {% if subDetails.subscription_status == 'Free' %}
         <div class="col-md-6 col-lg-3 mb-5">
             <div class="card sub-plan h-100 d-flex flex-column position-relative">
                 <div class="card-body d-flex flex-column">
                     <!-- Free - Title -->
                     <div style="padding-bottom: 2.8rem;">
-                        <h2 class="fw-bold">Free</h2>
+                        <h2 class="fw-bold sub-plan-title">Free</h2>
                         <p class="text-note">Enjoy basic features, absolutely free!</p>
                     </div>
 
@@ -76,21 +75,19 @@
                     <!-- Free - Button -->
                     <div class="mt-auto pt-4">
                     {% if not logged_in %}
-                        <a href="{{ url_for('sign_up') }}" class="btn btn-primary w-100">Sign Up</a>
+                        <a href="{{ url_for('sign_up') }}" class="btn btn-primary w-100">Sign Up to Get Started</a>
+                    {% elif user_role != 'traveller' %}
+                        <button class="btn btn-outline-secondary w-100" disabled>Not available for staff</button>
                     {% elif subDetails.subscription_status == 'Free' %}
                         <button class="btn btn-outline-secondary w-100" disabled>Current Plan</button>
-                    {% elif subDetails.is_trial_used == 0 %}
-                        <p class="text-note mb-2">Free trial available once per account.</p>
-                        <a href="{{ url_for('start_trial') }}" class="btn btn-outline-primary w-100">Start 1 Month for Free</a>
                     {% else %}
-                        <button class="btn btn-outline-secondary w-100" disabled>Trial Already Used</button>
+                        <button class="btn btn-outline-secondary w-100" disabled>You're on Premium</button>
                     {% endif %}
                     </div>
                     
                 </div>
             </div>
         </div>
-        {% endif %}
 
         <!-- Subscription Plans - 1/3/6 month -->
         {% for sub in subscriptions if sub.name != 'Free Trial' %}
@@ -106,7 +103,7 @@
 
                     <!-- Premium - Title -->
                     <div style="padding-bottom: 2.8rem;">
-                        <h2 class="fw-bold">{{ sub.name }}</h2>
+                        <h2 class="fw-bold sub-plan-title">{{ sub.name }}</h2>
                         <p class="text-note">
                             Access premium features for {{ sub.duration_months }} month{{ 's' if sub.duration_months > 1 else '' }}.
                         </p>
@@ -146,7 +143,12 @@
                     
                     <!-- Premium - Button -->
                     <div class="mt-auto pt-5">
-                        {% if sub.name != 'One Year' %}
+                        {% if user_role != 'traveller' %}
+                            <button class="btn btn-outline-secondary w-100" disabled>Not available for staff</button>
+                        {% elif (sub.name == 'One Month') and (subDetails.is_trial_used == 0) and ( subDetails.subscription_status == 'Free' ) %}
+                            <p class="text-note mb-2">Free trial available once per account.</p>
+                            <a href="{{ url_for('start_trial') }}" class="btn btn-outline-primary w-100">Start 1 Month for Free</a>
+                        {% elif sub.name != 'One Year' %}
                             <a href="{{ url_for('payment_page', subscription_id=sub.subscription_id) }}" class="btn btn-outline-primary w-100">Subscribe</a>
                         {% else %}
                             <a href="{{ url_for('payment_page', subscription_id=sub.subscription_id) }}" class="btn btn-primary w-100">Subscribe</a>
@@ -159,8 +161,12 @@
         {% endfor %}
 
         <!-- Note -->
-        <div class="text-center text-note">
-            Note: Prices include 15% GST for New Zealand residents. International users will see prices excluding GST.
+        <div class="col col-md-6 text-note">
+            Note:
+            <ul>
+                <li>Prices include 15% GST for New Zealand residents. International users will see prices excluding GST.</li>
+                <li>Free available once per account.</li>
+            </ul>
         </div>
 
     </div>
