@@ -34,7 +34,7 @@
                 </div>
 
                 <!-- Profile - Follow -->
-                {% if session['role'] == 'admin' or session['role'] == 'editor' or session['subscription_status'] != 'Free' %}
+                {% if session['role'] != 'traveller' or session['subscription_status'] != 'Free' %}
                     {% if user_id|string != session['user_id']|string %}
                         {% if is_following %}
                             <button class="btn btn-sm btn-danger mt-3 d-block mx-auto"

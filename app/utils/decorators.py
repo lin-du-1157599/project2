@@ -29,7 +29,7 @@ def subscription_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         user_role = session.get(constants.USER_ROLE)
-        if user_role in [constants.USER_ROLE_ADMIN, constants.USER_ROLE_EDITOR]:
+        if user_role in [constants.USER_ROLE_ADMIN, constants.USER_ROLE_EDITOR, constants.USER_ROLE_MODERATOR]:
             return f(*args, **kwargs)
 
         if session.get(constants.USER_SUBSCRIPTION_STATUS) == constants.USER_SUBSCRIPTION_FREE:
