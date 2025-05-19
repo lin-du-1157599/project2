@@ -124,7 +124,7 @@ def payment_page(subscription_id):
 @login_and_role_required([constants.USER_ROLE_TRAVELLER])
 def process_payment():
     subscription_id = request.form.get(constants.SUBSCRIPTION_ID)
-    card_number = request.form.get(constants.PAYMENT_CARD_NUMBER)
+    card_number = request.form.get(constants.PAYMENT_CARD_NUMBER).replace('-', '')
     expiry_date = request.form.get(constants.PAYMENT_EXPIRY_DATE)
     cvv = request.form.get(constants.PAYMENT_CVV)
     billing_country = request.form.get(constants.PAYMENT_BILLING_COUNTRY)
