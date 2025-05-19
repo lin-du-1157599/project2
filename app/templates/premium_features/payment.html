@@ -7,6 +7,16 @@
 
     <div class="card shadow">
         <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
             <h4 class="card-title text-center">{{ subscription.name }}</h4>
             <p class="text-center mb-3">
                 Duration: {{ subscription.duration_months }} month{{ 's' if subscription.duration_months > 1 else '' }}
@@ -15,6 +25,8 @@
             <form method="POST" action="{{ url_for('process_payment') }}">
                 <input type="hidden" name="subscription_id" value="{{ subscription.subscription_id }}">
                 <input type="hidden" name="duration_months" value="{{ subscription.duration_months }}">
+                <input type="hidden" name="price_nzd_excl_gst" value="{{ subscription.price_nzd_excl_gst }}">
+                <input type="hidden" name="price_nzd_incl_gst" value="{{ subscription.price_nzd_incl_gst }}">
 
                 <div class="mb-3">
                     <label for="card_number" class="form-label">Credit Card Number</label>
@@ -280,6 +292,7 @@
                     <strong>Price to Pay: </strong>
                     <span id="price_display">Please select a billing country</span>
                 </div>
+                <input type="hidden" name="price_to_pay" id="price_to_pay" value="">
 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary">Confirm Payment</button>
@@ -298,11 +311,14 @@
     function updatePrice() {
         const country = billingCountry.value;
         if (country === 'NZ') {
-            priceDisplay.textContent = `NZ $${priceInclGST.toFixed(2)} (Includes 15% GST)`;
+            priceDisplay.textContent = `NZ $${priceInclGST} (Includes 15% GST)`;
+            document.getElementById('price_to_pay').value = priceInclGST;
         } else if (country) {
-            priceDisplay.textContent = `NZ $${priceExclGST.toFixed(2)}`;
+            priceDisplay.textContent = `NZ $${priceExclGST}`;
+            document.getElementById('price_to_pay').value = priceExclGST;
         } else {
             priceDisplay.textContent = 'Please select a billing country';
+            document.getElementById('price_to_pay').value = '';
         }
     }
 

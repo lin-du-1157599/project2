@@ -143,7 +143,8 @@ UPDATE_DATE = 'update_date'
 JOURNEY_STATUS_PRIVATE = 'private'
 JOURNEY_TEXT = 'journey_text' # including title & description
 
-
+REQUEST_PRICE_TO_PAY = 'price_to_pay'
+REQUEST_BILLING_COUNTRY_NZ = 'NZ'
 REQUEST_MODE = 'mode'
 MODE_PUBLIC='public'
 MODE_ALL = 'all'
@@ -163,6 +164,7 @@ VIEW_TYPE_RESTRICTED = 'restricted'
 #subscriptions information fields
 SUBSCRIPTION_ID = 'subscription_id'
 SUBSCRIPTION_DURATION_MONTHS = 'duration_months'
+SUBSCRIPTION_PRICE_NZD_EXCL_GST = 'price_nzd_excl_gst'
 
 SUBSCRIPTIONS_NAME_FREE_TRIAL = 'Free Trial'
 SUBSCRIPTIONS_DURATION_MONTHS_ONE = 1
