@@ -237,6 +237,8 @@ CREATE TABLE departure_board_events (
 ALTER TABLE users MODIFY role ENUM('traveller', 'editor', 'admin', 'moderator') NOT NULL DEFAULT 'traveller';
 
 ALTER TABLE users 
+    ADD COLUMN subscription_end_date DATE,
+    ADD COLUMN remaining_months INT UNSIGNED NOT NULL DEFAULT 0,
     ADD COLUMN subscription_status ENUM('Free', 'Trial', 'Premium') NOT NULL DEFAULT 'Free',
     ADD COLUMN is_public_profile TINYINT NOT NULL DEFAULT 0,
     ADD COLUMN is_trial_used TINYINT NOT NULL DEFAULT 0;
