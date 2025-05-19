@@ -72,6 +72,15 @@
                     </div>
                 </div>
 
+                <!-- Profile upadte success message -->
+                {% if profile_update_successful %}
+                <div class="m-0 pb-4">
+                    <div class="bg-success text-white text-center p-2 mb-2" style="border-radius: 4px;">
+                        <div class="p-2">User information has been updated successfully!</div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div>
                     <!-- Profile Details -->
                     <form action="{{ url_for('edit_user') }}" method="POST" style="margin-top: 0;">

@@ -78,6 +78,10 @@
                             Last updated: {{ journey.update_date.strftime('%d %b %Y, %H:%M') }}
                         </small>
 
+                        {% if journey.user_id == user_id %}
+                        <p class="pt-3 text-end">You can't follow yourself.</p>
+                        {% endif %}
+
                     <!-- Action buttons - icon only -->
                     <div class="ms-auto text-end mt-2">
                         {% if mode == 'all' or (mode == 'public' and user_id == journey.user_id) %}

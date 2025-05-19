@@ -359,25 +359,57 @@ def search_public_journey():
             cursor.execute("""
                 SELECT DISTINCT
                            j.journey_id, j.title, j.description, j.update_date, j.user_id,
-                           u.username, u.first_name, u.last_name,
-                           MIN(e.location) AS location
+                           u.username, u.first_name, u.last_name
+                FROM journeys j
+                JOIN users u ON j.user_id = u.user_id
+                JOIN events e ON j.journey_id = e.journey_id
+                WHERE j.status = 'public' AND j.is_hidden = 0
+                    AND LOWER(e.location) LIKE LOWER(%s)
+                ORDER BY j.update_date DESC"""
+                ,(query,))
+        search_results = cursor.fetchall()
+
+        # Retrieve all public journeys along with their associated event locations.
+        # Locations are merged into a single string using GROUP_CONCAT for fuzzy comparison.
+        if not search_results and searchcat == constants.LOCATION:
+            cursor.execute("""
+                SELECT j.journey_id, j.title, j.description, j.update_date, j.user_id,
+                    u.username, u.first_name, u.last_name,
+                    GROUP_CONCAT(DISTINCT e.location) AS locations
                 FROM journeys j
                 JOIN users u ON j.user_id = u.user_id
                 JOIN events e ON j.journey_id = e.journey_id
                 WHERE j.status = 'public' AND j.is_hidden = 0
                 GROUP BY j.journey_id
-                ORDER BY j.update_date DESC""")
-        search_results = cursor.fetchall()
+                ORDER BY j.update_date DESC
+            """)
+            all_journeys = cursor.fetchall()
+
+            # Fuzzy search by event location.
+            # Compare the input keyword from the user with each journey's event location,
+            # both converted to lowercase and stripped of whitespace.
+            # If the similarity score is greater than or equal to 90,
+            # append the journey to the result list and skip remaining locations.
+            search_results = []
+            for journey in all_journeys:
+                location_list = journey.get('locations')
+                if not location_list:
+                    continue
+                
+                for location in location_list.split(','):
+                    score = fuzz.partial_ratio(keyword.lower(), location.strip().lower())
+                    if score >= 90:
+                        search_results.append(journey)
+                        break
 
     if not search_results:
-        flash('No journeys found matching your search criteria.', constants.FLASH_MESSAGE_DANGER)
-        return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, keyword = keyword)
+        return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, keyword = keyword, searchcat = searchcat)
 
-    # Using if statement to check the search category.
-    # If the type is JOURNEY_TEXT, highlight the keywords
+    # Using if statement to check the selected search category.
+    # If the type is JOURNEY_TEXT, highlight the matching keywords
     # to help users recognize them more esaily in the search results.
-    # Since the location details are not displayed on the journeys page,
-    # only the results are shown without highlighting.
+    # Since location details are not displayed on the journeys listing page,
+    # keyword highlighting is not applied in the LOCATION search results.
     highlighted_results = []
     if searchcat == constants.JOURNEY_TEXT:
         for journey in search_results:
@@ -387,14 +419,7 @@ def search_public_journey():
             journey['description'] = Markup(highlighted_description)
             highlighted_results.append(journey)
     else:
-        # Fuzzy search by event location. 
-        # Compare the input keyword from the user with
-        # each journey's location,both converted to lowercase.
-        # If the similarity score is greater that 80%,
-        # append the journey to the result list.
-        for journey in search_results:
-            if fuzz.partial_ratio(keyword.lower(), journey['location'].lower()) >= 80:
-                highlighted_results.append(journey)
+        highlighted_results = search_results
 
     return render_template(constants.TEMPLATE_PUBLIC_JOURNEY, journeyList = highlighted_results, keyword = keyword, searchcat = searchcat)
 
