@@ -79,7 +79,7 @@ def login():
             # Attempt to validate the login details against the database.
             with db.get_cursor() as cursor:
                 cursor.execute('''
-                            SELECT user_id, username, password_hash, role, status, subscription_status, profile_image, is_trial_used
+                            SELECT user_id, username, password_hash, subscription_end_date, role, status, subscription_status, profile_image, is_trial_used
                             FROM users
                             WHERE username = %s;
                             ''', (username,))
@@ -102,6 +102,8 @@ def login():
                         session[constants.USER_SUBSCRIPTION_STATUS] = account[constants.USER_SUBSCRIPTION_STATUS]
                         session[constants.USER_IS_TRIAL_USED] = account[constants.USER_IS_TRIAL_USED]
                         session[constants.USER_PROFILE_IMAGE] = account[constants.USER_PROFILE_IMAGE]
+                        session[constants.USER_SUBSCRIPTION_END_DATE] = account[constants.USER_SUBSCRIPTION_END_DATE].strftime('%d/%m/%Y')
+
 
                         return redirect(user_home_url())
                     else:
@@ -380,6 +382,7 @@ def logout():
     session.pop(constants.USER_ROLE, None)
     session.pop(constants.USER_SUBSCRIPTION_STATUS, None)
     session.pop(constants.USER_IS_TRIAL_USED, None)
+    session.pop(constants.USER_SUBSCRIPTION_END_DATE, None)
 
     return redirect(url_for(constants.URL_ROOT))
 
