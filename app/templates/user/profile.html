@@ -56,13 +56,17 @@
                     <h4 style="color: #646464">@{{ profile.username }}
                         <span class="badge bg-secondary ms-2">{{ profile.subscription_status | capitalize }}</span>
                     </h4>
-                    
+                    {% if session.get('subscription_end_date') %}
+                        <p class="text-muted">
+                            Subscription expires on: {{ session.get('subscription_end_date') }}
+                        </p>
+                    {% endif %}
+
                     <!-- Add subscription button here -->
                     <div class="mt-3">
                         <a href="{{ url_for('subscription') }}" class="btn btn-primary btn-lg">Upgrade Subscription</a>
                     </div>
-                </div>
-
+                </div>                
             </div>
         </div>
         
