@@ -279,7 +279,7 @@ def view_journey(journey_id):
                      SELECT 1
                      FROM user_follows uf
                      WHERE uf.user_id = %s
-                       AND uf.followed_id = j.user_id
+                       AND uf.followed_id = j.journey_id
                    ) AS is_following
             FROM journeys j
             JOIN users u ON j.user_id = u.user_id
@@ -505,7 +505,7 @@ def follow_journey(journey_id):
         already_following = cursor.fetchone()
 
         if already_following:
-            flash('You are already following this journey.', constants.FLASH_MESSAGE_INFO)
+            flash('You are already following this journey.', constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
 
         # Insert follow relationship into the database

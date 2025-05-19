@@ -481,7 +481,7 @@ def follow_user():
             WHERE user_id = %s AND followed_id = %s AND follow_type = 'user'
         """, (user_id, followed_id))
         if cursor.fetchone():
-            flash("You are already following this user.", constants.FLASH_MESSAGE_INFO)
+            flash("You are already following this user.", constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for('edit_user', user_id=followed_id))
 
         # Insert follow relationship
