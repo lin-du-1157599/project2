@@ -47,3 +47,13 @@
     top: -1.6rem !important;
     font-size: 11px;
 }
+
+.col-rounded{
+    border-radius: 1.2rem;
+}
+
+.tooltip-inner {
+    white-space: nowrap;
+    max-width: unset;
+    padding: 4px 8px;
+}

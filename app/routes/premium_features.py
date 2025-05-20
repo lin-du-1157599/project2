@@ -57,7 +57,7 @@ def start_trial():
     return redirect(url_for(constants.URL_SUBSCRIPTION))
 
 def process_subscription(subscription_status, is_trial_used, subscription_id, duration_months, 
-                         billing_country, card_number, expiry_date, cvv, amount_paid, price_nzd_excl_gst):
+                         billing_country, billing_address, card_number, expiry_date, cvv, amount_paid, price_nzd_excl_gst):
     conn = None
     cursor = None
     try:
@@ -96,7 +96,7 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
         if is_trial_used is not None:
             session[constants.USER_IS_TRIAL_USED] = constants.USER_IS_TRIAL_USED_YES
         else:
-            subscription_payment(billing_country, card_number, expiry_date, cvv, price_nzd_excl_gst,amount_paid, user_subscription_id, cursor)
+            subscription_payment(billing_country, billing_address, card_number, expiry_date, cvv, price_nzd_excl_gst,amount_paid, user_subscription_id, cursor)
 
         flash(f"Your {duration_months}-month{'s' if duration_months != 1 else ''} free trial has started!", constants.FLASH_MESSAGE_SUCCESS)
         conn.commit()
@@ -110,15 +110,15 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
         if conn:
             conn.close()
 
-def subscription_payment(billing_country, card_number, expiry_date, cvv, price_nzd_excl_gst, amount_paid, user_subscription_id, cursor):
+def subscription_payment(billing_country, billing_address, card_number, expiry_date, cvv, price_nzd_excl_gst, amount_paid, user_subscription_id, cursor):
     if(billing_country == constants.REQUEST_BILLING_COUNTRY_NZ):
         gst_amount = (amount_paid - price_nzd_excl_gst).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
     else:
         gst_amount = 0.00
     cursor.execute("""
-            INSERT INTO subscription_payments (user_id, billing_country, amount_paid, gst_amount, card_number, expiry_date, cvv, user_subscription_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (session.get(constants.USER_ID), billing_country, amount_paid, gst_amount, card_number, expiry_date, cvv, user_subscription_id))
+            INSERT INTO subscription_payments (user_id, billing_country, billing_address, amount_paid, gst_amount, card_number, expiry_date, cvv, user_subscription_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (session.get(constants.USER_ID), billing_country, billing_address, amount_paid, gst_amount, card_number, expiry_date, cvv, user_subscription_id))
 
 @app.route('/payment/<int:subscription_id>')
 @login_and_role_required([constants.USER_ROLE_TRAVELLER])
@@ -141,6 +141,7 @@ def process_payment():
     expiry_date = request.form.get(constants.PAYMENT_EXPIRY_DATE)
     cvv = request.form.get(constants.PAYMENT_CVV)
     billing_country = request.form.get(constants.PAYMENT_BILLING_COUNTRY)
+    billing_address = request.form.get(constants.PAYMENT_BILLING_ADDRESS)
     price_nzd_excl_gst = Decimal(request.form.get(constants.SUBSCRIPTION_PRICE_NZD_EXCL_GST))
     price_to_pay = Decimal(request.form.get(constants.REQUEST_PRICE_TO_PAY))
     duration_months_str = request.form.get(constants.SUBSCRIPTION_DURATION_MONTHS)
@@ -151,16 +152,17 @@ def process_payment():
         constants.PAYMENT_EXPIRY_DATE: expiry_date,
         constants.PAYMENT_CVV: cvv,
         constants.PAYMENT_BILLING_COUNTRY: billing_country,
+        constants.PAYMENT_BILLING_ADDRESS: billing_address,
         constants.SUBSCRIPTION_DURATION_MONTHS: duration_months,
         constants.SUBSCRIPTION_PRICE_NZD_EXCL_GST: price_nzd_excl_gst,
         constants.REQUEST_PRICE_TO_PAY: price_to_pay
     }
 
-    if not (card_number and expiry_date and cvv and billing_country):
+    if not (card_number and expiry_date and cvv and billing_country and billing_address):
         flash("Please fill in all payment details.",constants.FLASH_MESSAGE_DANGER)
         return render_template(constants.TEMPLATE_PAYMENT, subscription=subscription)
     try:
-        process_subscription(constants.USER_SUBSCRIPTION_PREMIUM, None, subscription_id, duration_months, billing_country, card_number, expiry_date, cvv, price_to_pay, price_nzd_excl_gst)
+        process_subscription(constants.USER_SUBSCRIPTION_PREMIUM, None, subscription_id, duration_months, billing_country, billing_address, card_number, expiry_date, cvv, price_to_pay, price_nzd_excl_gst)
     except Exception as e:
         flash("An error occurred. Please try again later.", constants.FLASH_MESSAGE_DANGER)
         print("Error:", e)
