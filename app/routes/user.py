@@ -102,8 +102,10 @@ def login():
                         session[constants.USER_SUBSCRIPTION_STATUS] = account[constants.USER_SUBSCRIPTION_STATUS]
                         session[constants.USER_IS_TRIAL_USED] = account[constants.USER_IS_TRIAL_USED]
                         session[constants.USER_PROFILE_IMAGE] = account[constants.USER_PROFILE_IMAGE]
-                        session[constants.USER_SUBSCRIPTION_END_DATE] = account[constants.USER_SUBSCRIPTION_END_DATE].strftime('%d/%m/%Y')
 
+                        subscription_end_date = account[constants.USER_SUBSCRIPTION_END_DATE]
+                        if subscription_end_date is not None:
+                            session[constants.USER_SUBSCRIPTION_END_DATE] = subscription_end_date.strftime('%d/%m/%Y')
 
                         return redirect(user_home_url())
                     else:
@@ -479,7 +481,7 @@ def follow_user():
             WHERE user_id = %s AND followed_id = %s AND follow_type = 'user'
         """, (user_id, followed_id))
         if cursor.fetchone():
-            flash("You are already following this user.", constants.FLASH_MESSAGE_INFO)
+            flash("You are already following this user.", constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for('edit_user', user_id=followed_id))
 
         # Insert follow relationship

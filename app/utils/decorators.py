@@ -22,12 +22,19 @@ def login_required(f):
 
 def subscription_required(f):
     """
-    Checks if the user has an active subscription. If not, redirects to the subscription page.
+    Checks if the user has an active subscription.
+    Allows access if the user is an admin or editor.
+    If not, redirects to the subscription page.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        user_role = session.get(constants.USER_ROLE)
+        if user_role in [constants.USER_ROLE_ADMIN, constants.USER_ROLE_EDITOR, constants.USER_ROLE_MODERATOR]:
+            return f(*args, **kwargs)
+
         if session.get(constants.USER_SUBSCRIPTION_STATUS) == constants.USER_SUBSCRIPTION_FREE:
             return render_template(constants.TEMPLATE_ACCESS_DENIED), constants.HTTP_STATUS_CODE_403
+
         return f(*args, **kwargs)
     return decorated_function
 

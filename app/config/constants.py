@@ -174,6 +174,7 @@ SUBSCRIPTIONS_DURATION_MONTHS_ONE = 1
 # subscription_payments information fields
 PAYMENT_ID = 'payment_id'
 PAYMENT_BILLING_COUNTRY = 'billing_country'
+PAYMENT_BILLING_ADDRESS = 'billing_address'
 PAYMENT_AMOUNT_PAID = 'amount_paid'
 PAYMENT_GST_AMOUNT = 'gst_amount'
 PAYMENT_CURRENCY = 'currency'

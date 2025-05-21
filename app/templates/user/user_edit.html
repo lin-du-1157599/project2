@@ -34,29 +34,30 @@
                 </div>
 
                 <!-- Profile - Follow -->
-                {% if user_id|string != session['user_id']|string %}
-                    {% if is_following %}
-                        <button class="btn btn-sm btn-danger mt-3 d-block mx-auto"
-                                onclick="showAlertModal('unfollowUserModal', 'Confirm Unfollow', 'Warning',
-                                'Are you sure you want to unfollow?<br>After unfollowing, related events will no longer appear on your Departure Board.',
-                                function(e) {
-                                    e.preventDefault();
-                                    const modalEl = document.getElementById('unfollowUserModal');
-                                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                                    if (modalInstance) {
-                                      modalInstance.hide();
-                                    }
-                                    window.location.href = '{{ url_for('unfollow_user', followed_id=user_id) }}';
-                                })">
-                          Unfollow
-                        </button>
-                    {% else %}
-                        <form action="{{ url_for('follow_user', followed_id=user_id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-primary mt-3 d-block mx-auto" title="Follow Journey">Follow</button>
-                        </form>
+                {% if session['role'] != 'traveller' or session['subscription_status'] != 'Free' %}
+                    {% if user_id|string != session['user_id']|string %}
+                        {% if is_following %}
+                            <button class="btn btn-sm btn-danger mt-3 d-block mx-auto"
+                                    onclick="showAlertModal('unfollowUserModal', 'Confirm Unfollow', 'Warning',
+                                    'Are you sure you want to unfollow?<br>After unfollowing, related events will no longer appear on your Departure Board.',
+                                    function(e) {
+                                        e.preventDefault();
+                                        const modalEl = document.getElementById('unfollowUserModal');
+                                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                                        if (modalInstance) {
+                                          modalInstance.hide();
+                                        }
+                                        window.location.href = '{{ url_for('unfollow_user', followed_id=user_id) }}';
+                                    })">
+                              Unfollow
+                            </button>
+                        {% else %}
+                            <form action="{{ url_for('follow_user', followed_id=user_id) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-primary mt-3 d-block mx-auto" title="Follow Journey">Follow</button>
+                            </form>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
-
             </div>
         </div>
         
