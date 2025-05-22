@@ -179,10 +179,12 @@ def subscription_history():
 
     query = """
         SELECT us.start_date, us.end_date, s.name AS subscription_name, s.duration_months, 
-               s.is_free_trial, s.discount_percent, s.is_admin_grantable 
+               s.is_free_trial, s.discount_percent, s.is_admin_grantable, sp.card_number, 
+               sp.amount_paid, sp.gst_amount, sp.billing_country, sp.created_at
         FROM user_subscriptions us
+        LEFT JOIN subscription_payments sp ON sp.user_subscription_id = us.user_subscription_id
         LEFT JOIN subscriptions s ON s.subscription_id = us.subscription_id
-        WHERE user_id = %s
+        WHERE us.user_id = %s
     """
     params = [user_id]
     if admin_granted_param == constants.REQUEST_TRUE:
