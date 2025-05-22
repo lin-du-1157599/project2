@@ -52,6 +52,7 @@ from app.routes import journey
 from app.routes import announcement
 from app.routes import departure_board
 from app.routes import premium_features
+from app.routes import messages
 from app.config import constants
 from app.routes.community import comments
 from app.routes.community import reactions

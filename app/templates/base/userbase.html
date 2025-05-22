@@ -302,6 +302,19 @@
                                 <i class="bi bi-megaphone-fill fs-2" style="color: #ccc;"></i>
                             </a>
 						</li>
+						<li class="nav-item p-2">
+							<h4 class="fw-bold m-0">
+								<a class="nav-link{{ ' active' if active_page == 'messages' else '' }} position-relative"
+								   href="{{ url_for('messages_inbox') }}"
+								   title="Messages">
+									<i class="fas fa-envelope fa-lg"></i>
+									<span id="unreadBadge"
+										  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+										  style="display: none; font-size: 0.6rem; min-width: 18px; height: 18px; line-height: 18px;">
+									</span>
+								</a>
+							</h4>
+						</li>
 						<li class="nav-item p-0">
 							<a class="nav-link{{ ' active' if active_page == 'profile' else '' }}" href="{{ url_for('profile') }}">
                                 <img src="/static/uploads/{{ session['profile_image'] }}"
@@ -355,4 +368,29 @@
         {% include 'components/modal.html' %}
 
 	</body>
+
+<script>
+// Check for unread messages every 30 seconds
+function checkUnreadMessages() {
+    fetch('/api/messages/unread_count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('unreadBadge');
+            if (badge && data.unread_count > 0) {
+                badge.textContent = data.unread_count;
+                badge.style.display = 'inline';
+            } else if (badge) {
+                badge.style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error checking unread messages:', error));
+}
+
+// Check immediately and then every 30 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    checkUnreadMessages();
+    setInterval(checkUnreadMessages, 30000);
+});
+</script>
+
 </html>
