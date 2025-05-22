@@ -88,9 +88,9 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
         start_date = date.today()
         end_date = start_date + relativedelta(months=+duration_months)
         cursor.execute("""
-            INSERT INTO user_subscriptions (user_id, subscription_id, remaining_months, start_date, end_date)
+            INSERT INTO user_subscriptions (user_id, subscription_id, start_date, end_date)
             VALUES (%s, %s, %s, %s, %s)
-        """, (session.get(constants.USER_ID), subscription_id, duration_months, start_date, end_date))
+        """, (session.get(constants.USER_ID), subscription_id, start_date, end_date))
         user_subscription_id = cursor.lastrowid
 
         if is_trial_used is not None:
@@ -169,7 +169,33 @@ def process_payment():
         return render_template(constants.TEMPLATE_PAYMENT, subscription=subscription)
     return redirect(url_for(constants.URL_SUBSCRIPTION))
 
-@app.route('/subscription_history')
+from flask import request
+
+@app.route('/subscription_history', methods=[constants.HTTP_METHOD_GET])
 @login_required
 def subscription_history():
-    return render_template('subscription_history.html')
+    user_id = session.get(constants.USER_ID)
+    admin_granted_param = request.args.get("admin_granted")
+
+    query = """
+        SELECT us.start_date, us.end_date, s.name AS subscription_name, s.duration_months, 
+               s.is_free_trial, s.discount_percent, s.is_admin_grantable 
+        FROM user_subscriptions us
+        LEFT JOIN subscriptions s ON s.subscription_id = us.subscription_id
+        WHERE user_id = %s
+    """
+    params = [user_id]
+
+    if admin_granted_param == "true":
+        query += " AND s.is_admin_grantable = TRUE"
+    elif admin_granted_param == "false":
+        query += " AND (s.is_admin_grantable IS NULL OR s.is_admin_grantable = FALSE)"
+
+    query += " ORDER BY us.start_date DESC"
+
+    with db.get_cursor() as cursor:
+        cursor.execute(query, params)
+        subscriptions = cursor.fetchall()
+
+    return render_template('subscription_history.html', subscriptions=subscriptions)
+
