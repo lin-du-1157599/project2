@@ -112,6 +112,7 @@ TEMPLATE_DEPARTURE_BOARD = 'departure_board.html'
 
 TEMPLATE_SUBSCRIPTION = 'subscription.html'
 TEMPLATE_PAYMENT = 'payment.html'
+TEMPLATE_SUBSCRIPTION_HISTORY = 'subscription_history.html'
 
 # HTTP status codes
 # User permission-related issues
@@ -147,6 +148,9 @@ JOURNEY_TEXT = 'journey_text' # including title & description
 
 REQUEST_PRICE_TO_PAY = 'price_to_pay'
 REQUEST_BILLING_COUNTRY_NZ = 'NZ'
+REQUEST_ADMIN_GRANTED = 'admin_granted'
+REQUEST_TRUE = 'true'
+REQUEST_FALSE = 'false'
 REQUEST_MODE = 'mode'
 MODE_PUBLIC='public'
 MODE_ALL = 'all'

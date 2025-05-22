@@ -175,7 +175,7 @@ from flask import request
 @login_required
 def subscription_history():
     user_id = session.get(constants.USER_ID)
-    admin_granted_param = request.args.get("admin_granted")
+    admin_granted_param = request.args.get(constants.REQUEST_ADMIN_GRANTED)
 
     query = """
         SELECT us.start_date, us.end_date, s.name AS subscription_name, s.duration_months, 
@@ -185,17 +185,14 @@ def subscription_history():
         WHERE user_id = %s
     """
     params = [user_id]
-
-    if admin_granted_param == "true":
+    if admin_granted_param == constants.REQUEST_TRUE:
         query += " AND s.is_admin_grantable = TRUE"
-    elif admin_granted_param == "false":
+    elif admin_granted_param == constants.REQUEST_FALSE:
         query += " AND (s.is_admin_grantable IS NULL OR s.is_admin_grantable = FALSE)"
-
     query += " ORDER BY us.start_date DESC"
-
     with db.get_cursor() as cursor:
         cursor.execute(query, params)
         subscriptions = cursor.fetchall()
 
-    return render_template('subscription_history.html', subscriptions=subscriptions)
+    return render_template(constants.TEMPLATE_SUBSCRIPTION_HISTORY, subscriptions=subscriptions)
 

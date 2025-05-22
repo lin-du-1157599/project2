@@ -39,8 +39,6 @@
                     <th scope="col" class="p-3">Subscription Name</th>
                     <th scope="col" class="p-3">Discount Percent</th>
                     <th scope="col" class="p-3">Duration Months</th>
-                    <th scope="col" class="p-3">Free Trial</th>
-                    <th scope="col" class="p-3">Admin Granted</th>
                     <th scope="col" class="p-3">Start Date</th>
                     <th scope="col" class="p-3">End Date</th>
                 </tr>
@@ -51,20 +49,6 @@
                     <td class="p-3">{{ subscription.subscription_name }}</td>
                     <td class="p-3">{{ subscription.discount_percent }}</td>
                     <td class="p-3">{{ subscription.duration_months }}</td>
-                    <td class="p-3">
-                        {% if subscription.is_free_trial %}
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                        {% else %}
-                            <i class="bi bi-x-circle-fill text-danger"></i>
-                        {% endif %}
-                    </td>
-                    <td class="p-3">
-                        {% if subscription.is_admin_grantable %}
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                        {% else %}
-                            <i class="bi bi-x-circle-fill text-danger"></i>
-                        {% endif %}
-                    </td>
                     <td class="p-3">{{ subscription.start_date.strftime('%Y-%m-%d') }}</td>
                     <td class="p-3">{{ subscription.end_date.strftime('%Y-%m-%d') }}</td>
                 </tr>
