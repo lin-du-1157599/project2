@@ -41,17 +41,45 @@
                     <th scope="col" class="p-3">Duration Months</th>
                     <th scope="col" class="p-3">Start Date</th>
                     <th scope="col" class="p-3">End Date</th>
+                    {% if request.args.get('admin_granted') == 'false' %}
+                        <th class="text-center">Action</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for subscription in subscriptions %}
-                <tr>
-                    <td class="p-3">{{ subscription.subscription_name }}</td>
-                    <td class="p-3">{{ subscription.discount_percent }}</td>
-                    <td class="p-3">{{ subscription.duration_months }}</td>
-                    <td class="p-3">{{ subscription.start_date.strftime('%Y-%m-%d') }}</td>
-                    <td class="p-3">{{ subscription.end_date.strftime('%Y-%m-%d') }}</td>
-                </tr>
+                    <tr>
+                        <td class="p-3">{{ subscription.subscription_name }}</td>
+                        <td class="p-3">{{ subscription.discount_percent }}</td>
+                        <td class="p-3">{{ subscription.duration_months }}</td>
+                        <td class="p-3">{{ subscription.start_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="p-3">{{ subscription.end_date.strftime('%Y-%m-%d') }}</td>
+                        {% if request.args.get('admin_granted') == 'false' %}
+                            <td class="p-3 text-center">
+                                {% if not subscription.is_free_trial and not subscription.is_admin_grantable %}
+                                    <button class="btn btn-outline-secondary btn-sm" type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#paymentCollapse{{ loop.index }}"
+                                            aria-expanded="false"
+                                            aria-controls="paymentCollapse{{ loop.index }}">
+                                        <i class="bi bi-credit-card"></i> Payment Info
+                                    </button>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% if not subscription.is_free_trial and not subscription.is_admin_grantable %}
+                        <tr class="collapse" id="paymentCollapse{{ loop.index }}">
+                            <td colspan="6" class="bg-light px-4 py-3 border-top">
+                                <div><strong>Amount Paid:</strong> ${{ '%.2f'|format(subscription.amount_paid) }}</div>
+                                {% if subscription.billing_country == 'NZ' %}
+                                    <div><strong>Gst Amount:</strong> ${{ '%.2f'|format(subscription.gst_amount) }}</div>
+                                {% endif %}
+                                <div><strong>Payment Date:</strong> {{ subscription.created_at.strftime('%Y-%m-%d') }}</div>
+                                <div><strong>Billing Country:</strong> {{ subscription.billing_country }}</div>
+                            </td>
+                        </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
