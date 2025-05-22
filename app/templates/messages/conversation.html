@@ -70,12 +70,12 @@
 
                                 {% if show_delete %}
                                 <div class="message-actions position-absolute"
-                                     style="top: 5px; {% if message.sender_id == session['user_id'] %}left: -35px;{% else %}right: -35px;{% endif %} opacity: 0; transition: opacity 0.2s;">
-                                    <button class="btn btn-sm btn-outline-danger delete-message-btn"
+                                     style="top: 5px; {% if message.sender_id == session['user_id'] %}left: -35px;{% else %}right: -35px;{% endif %}">
+                                    <button class="btn btn-sm btn-danger delete-message-btn"
                                             data-message-id="{{ message.message_id }}"
                                             data-bs-toggle="tooltip"
                                             title="Delete message">
-                                        <i class="fas fa-trash fa-xs"></i>
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                                 {% endif %}
@@ -119,9 +119,9 @@
                 <div class="alert alert-info text-center">
                     <i class="fas fa-lock me-2"></i>
                     {% if session['subscription_status'] == 'Free' and session['role'] == 'traveller' %}
-                        You need a <a href="{{ url_for('subscription') }}" class="fw-bold">premium subscription</a> to send messages.
+                        You need a <a href="{{ url_for('subscription_page') }}" class="fw-bold">premium subscription</a> to send messages.
                     {% else %}
-                        Your subscription has expired. <a href="{{ url_for('subscription') }}" class="fw-bold">Renew your subscription</a> to continue messaging.
+                        Your subscription has expired. <a href="{{ url_for('subscription_page') }}" class="fw-bold">Renew your subscription</a> to continue messaging.
                     {% endif %}
                 </div>
                 {% endif %}
@@ -199,26 +199,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Show/hide delete buttons on message hover
-    document.querySelectorAll('.message-bubble').forEach(bubble => {
-        const actions = bubble.querySelector('.message-actions');
-
-        if (actions) {
-            bubble.addEventListener('mouseenter', function() {
-                actions.style.opacity = '1';
-            });
-
-            bubble.addEventListener('mouseleave', function() {
-                actions.style.opacity = '0';
-            });
-        }
-    });
-
-    // Debug: Log how many delete buttons are found
+    // Handle delete message button clicks
     const deleteButtons = document.querySelectorAll('.delete-message-btn');
     console.log(`Found ${deleteButtons.length} delete buttons`);
 
-    // Handle delete message button clicks
     deleteButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
@@ -321,17 +305,9 @@ document.addEventListener('DOMContentLoaded', function() {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Message hover effects */
+/* Message styling - keep it simple */
 .message-bubble {
     position: relative;
-}
-
-.message-bubble:hover .message-actions {
-    opacity: 1 !important;
-}
-
-.message-actions {
-    z-index: 10;
 }
 
 .message-actions .btn {
@@ -344,14 +320,9 @@ document.addEventListener('DOMContentLoaded', function() {
     justify-content: center;
 }
 
-.message-actions .btn:hover {
-    transform: scale(1.1);
-}
-
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
     .message-actions {
-        opacity: 1 !important;
         position: relative !important;
         top: auto !important;
         left: auto !important;
@@ -363,10 +334,6 @@ document.addEventListener('DOMContentLoaded', function() {
     .message-bubble {
         display: block;
         width: 100%;
-    }
-
-    .message-item.text-end .message-actions {
-        text-align: center;
     }
 }
 </style>
