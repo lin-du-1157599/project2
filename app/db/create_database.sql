@@ -250,4 +250,10 @@ MODIFY status ENUM('private', 'public', 'published') NOT NULL DEFAULT 'private';
 ALTER TABLE journeys
 ADD COLUMN cover_image VARCHAR(255);
 
+-- 22/05/2025 add
+ALTER TABLE private_messages
+ADD COLUMN is_read TINYINT NOT NULL DEFAULT 0,
+ADD INDEX idx_receiver_read (receiver_id, is_read),
+ADD INDEX idx_conversation (sender_id, receiver_id);
+
 SET FOREIGN_KEY_CHECKS = 1;

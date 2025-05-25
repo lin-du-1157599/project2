@@ -68,10 +68,17 @@
                         <a href="{{ url_for('subscription_history', admin_granted='false') }}" class="btn btn-outline-secondary btn-lg">View Subscription History</a>
                     </div>
                     
-                </div>                
+                    <!-- Community Settings Button -->
+                    <div class="mt-3 text-center">
+                        <a href="{{ url_for('community_settings') }}" class="btn btn-outline-info btn-lg w-100">
+                            <i class="fas fa-users me-2"></i>Community Settings
+                        </a>
+                    </div>
+
+                </div>
             </div>
         </div>
-        
+
         <!-- Right - Journey List -->
         <div class="col-md-8 px-2">
             <div class="p-5" style="background-color: #f0f0f0; border-radius: 40px;">
@@ -79,7 +86,7 @@
                 <div class="pb-4">
                     <div>
                         <h1 class="fw-bold">{{ profile.role.title() }} Profile</h1>
-                        <p class="fs-5 text-muted">Here's everything we know about you.</p>            
+                        <p class="fs-5 text-muted">Here's everything we know about you.</p>
                     </div>
                 </div>
 
@@ -92,11 +99,11 @@
                         </div>
                     </div>
                     {% endif %}
-                    
+
                     <!-- Profile Details -->
                     <form id="userform" name="userform" action="/profile" method="post" style="margin-top: 0;">
                         <input type="hidden" name="user_id" id="userid" class="form-control" value="{{profile['user_id']}}">
-                
+
                         <div class="row justify-content-center">
                             <div class="col-lg-6 mb-3">
                                 <label for="username" class="form-label fw-bold fs-5">Username*</label>
@@ -110,7 +117,7 @@
                                 <div class="invalid-feedback">{{ email_error }}</div>
                             </div>
                         </div>
-                
+
                         <div class="row justify-content-center">
                             <div class="col-lg-6 mb-3">
                                 <label for="firstname" class="form-label fw-bold fs-5">First Name</label>
@@ -118,7 +125,7 @@
                                 <div id="firstnameHelp" class="form-text">Max 50 characters</div>
                                 <div class="invalid-feedback d-block">{{ firstname_error }}</div>
                             </div>
-                
+
                             <div class="col-lg-6 mb-3">
                                 <label for="lastname" class="form-label fw-bold fs-5">Last Name</label>
                                 <input type="text" class="form-control form-control-lg {% if lastname_error %} is-invalid{% endif %}" id="last_name" name="last_name" value="{{ profile.last_name }}">
@@ -126,7 +133,7 @@
                                 <div class="invalid-feedback d-block">{{ lastname_error }}</div>
                             </div>
                         </div>
-                
+
                         <div class="mb-3">
                             <label for="location" class="form-label fw-bold fs-5">Location</label>
                             <input type="text" class="form-control form-control-lg {% if location_error %} is-invalid{% endif %}" id="location" name="location" value="{{ profile.location if profile.location is not none else '' }}">
@@ -139,7 +146,7 @@
                             <textarea id="personal_description" name="personal_description" class="form-control form-control-lg {% if personal_description_error %} is-invalid{% endif %}" placeholder="Enter your personal description" rows="5"> {{ profile.personal_description if profile.personal_description is not none else ''  }}</textarea>
                             <div class="invalid-feedback">{{ personal_description_error }}</div>
                         </div>
-                        
+
                         <!-- Button -->
                         <div class="row justify-content-center">
                             <div class="mt-4 text-center">

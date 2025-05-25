@@ -253,6 +253,11 @@
 							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'public_journeys' else '' }}" href="{{ url_for('public_journeys') }}">Explore</a></h4>
 						</li>
 
+						<!-- Community Features -->
+						<li class="nav-item p-2">
+							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'public_users' else '' }}" href="{{ url_for('public_users') }}">Community</a></h4>
+						</li>
+
 						<!-- User Management -->
 						{% if session['role'] == 'admin' %}
 							<li class="nav-item dropdown py-2">
@@ -301,6 +306,19 @@
 							<a class="nav-link{ ' active' if active_page == 'announcements_list' else '' } ms-2" href="{{ url_for('announcements_list') }}">
                                 <i class="bi bi-megaphone-fill fs-2" style="color: #ccc;"></i>
                             </a>
+						</li>
+						<li class="nav-item p-2">
+							<h4 class="fw-bold m-0">
+								<a class="nav-link{{ ' active' if active_page == 'messages' else '' }} position-relative"
+								   href="{{ url_for('messages_inbox') }}"
+								   title="Messages">
+									<i class="fas fa-envelope fa-lg"></i>
+									<span id="unreadBadge"
+										  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+										  style="display: none; font-size: 0.6rem; min-width: 18px; height: 18px; line-height: 18px;">
+									</span>
+								</a>
+							</h4>
 						</li>
 						<li class="nav-item p-0">
 							<a class="nav-link{{ ' active' if active_page == 'profile' else '' }}" href="{{ url_for('profile') }}">
@@ -355,4 +373,29 @@
         {% include 'components/modal.html' %}
 
 	</body>
+
+<script>
+// Check for unread messages every 30 seconds
+function checkUnreadMessages() {
+    fetch('/api/messages/unread_count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('unreadBadge');
+            if (badge && data.unread_count > 0) {
+                badge.textContent = data.unread_count;
+                badge.style.display = 'inline';
+            } else if (badge) {
+                badge.style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error checking unread messages:', error));
+}
+
+// Check immediately and then every 30 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    checkUnreadMessages();
+    setInterval(checkUnreadMessages, 30000);
+});
+</script>
+
 </html>
