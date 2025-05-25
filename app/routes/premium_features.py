@@ -49,7 +49,7 @@ def start_trial():
                 flash("No free trial available.", constants.FLASH_MESSAGE_DANGER)
                 return redirect(url_for(constants.URL_SUBSCRIPTION))
         process_subscription(constants.USER_SUBSCRIPTION_TRIAL, constants.USER_IS_TRIAL_USED_YES, subscription[constants.SUBSCRIPTION_ID], constants.SUBSCRIPTIONS_DURATION_MONTHS_ONE, 
-                         None, None, None, None, None, None)
+                         None, None, None, None, None, None, None)
     except Exception as e:
         flash("An error occurred. Please try again later.", constants.FLASH_MESSAGE_DANGER)
         print("Error:", e)
@@ -58,13 +58,7 @@ def start_trial():
 
 def process_subscription(subscription_status, is_trial_used, subscription_id, duration_months, 
                          billing_country, billing_address, card_number, expiry_date, cvv, amount_paid, price_nzd_excl_gst):
-    conn = None
-    cursor = None
-    try:
-        conn = db.get_db()
-        conn.autocommit = False
-        cursor = conn.cursor(dictionary=True)
-
+    with db.get_cursor() as cursor:
         cursor.execute("""
             SELECT  subscription_end_date, remaining_months FROM users WHERE user_id = %s
         """, (session.get(constants.USER_ID), ))
@@ -89,7 +83,7 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
         end_date = start_date + relativedelta(months=+duration_months)
         cursor.execute("""
             INSERT INTO user_subscriptions (user_id, subscription_id, start_date, end_date)
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s)
         """, (session.get(constants.USER_ID), subscription_id, start_date, end_date))
         user_subscription_id = cursor.lastrowid
 
@@ -99,16 +93,7 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
             subscription_payment(billing_country, billing_address, card_number, expiry_date, cvv, price_nzd_excl_gst,amount_paid, user_subscription_id, cursor)
 
         flash(f"Your {duration_months}-month{'s' if duration_months != 1 else ''} free trial has started!", constants.FLASH_MESSAGE_SUCCESS)
-        conn.commit()
         session[constants.USER_SUBSCRIPTION_END_DATE] = new_end_date.strftime('%d/%m/%Y')
-    except Exception as e:
-        conn.rollback()
-        raise
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 def subscription_payment(billing_country, billing_address, card_number, expiry_date, cvv, price_nzd_excl_gst, amount_paid, user_subscription_id, cursor):
     if(billing_country == constants.REQUEST_BILLING_COUNTRY_NZ):
