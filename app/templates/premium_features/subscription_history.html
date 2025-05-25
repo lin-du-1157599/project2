@@ -71,12 +71,17 @@
                     {% if not subscription.is_free_trial and not subscription.is_admin_grantable %}
                         <tr class="collapse" id="paymentCollapse{{ loop.index }}">
                             <td colspan="6" class="bg-light px-4 py-3 border-top">
-                                <div><strong>Amount Paid:</strong> ${{ '%.2f'|format(subscription.amount_paid) }}</div>
-                                {% if subscription.billing_country == 'NZ' %}
+                                {% if subscription.amount_paid is not none %}
+                                    <div><strong>Amount Paid:</strong> ${{ '%.2f'|format(subscription.amount_paid) }}</div>
+                                {% endif %}
+                                {% if subscription.billing_country == 'NZ' and subscription.gst_amount is not none%}
                                     <div><strong>Gst Amount:</strong> ${{ '%.2f'|format(subscription.gst_amount) }}</div>
                                 {% endif %}
-                                <div><strong>Payment Date:</strong> {{ subscription.created_at.strftime('%Y-%m-%d') }}</div>
+                                {% if subscription.created_at is not none %}
+                                    <div><strong>Payment Date:</strong> {{ subscription.created_at.strftime('%Y-%m-%d') }}</div>
+                                {% endif %}
                                 <div><strong>Billing Country:</strong> {{ subscription.billing_country }}</div>
+                                <div><strong>Billing Address:</strong> {{ subscription.billing_address }}</div>
                             </td>
                         </tr>
                     {% endif %}
