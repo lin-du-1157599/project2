@@ -8,6 +8,7 @@ from flask import jsonify, request, session, redirect, url_for, flash
 from app.config import constants
 from app.utils.decorators import login_required
 from app.db import db
+from app.utils.achievement import AchievementUtils
 from datetime import datetime
 
 
@@ -133,6 +134,12 @@ def add_comment():
 
         # Get the inserted comment ID
         comment_id = cursor.lastrowid
+
+        # Check for First Comment achievement
+        if AchievementUtils.check_first_comment_achievement(user_id):
+            achievement = AchievementUtils.get_achievement_notification('First Comment')
+            if achievement:
+                flash(f'Congratulations! You earned the {achievement["name"]} achievement!', constants.FLASH_MESSAGE_SUCCESS)
 
     # Get the comment details to return
     with db.get_cursor() as cursor:

@@ -111,6 +111,15 @@ def toggle_reaction():
         count_result = cursor.fetchone()
         count = count_result['count'] if count_result else 0
 
+        # 集成Popular Traveller成就检测
+        if target_type == 'event' and reaction_type == 'like' and is_active:
+            # 找到事件拥有者
+            cursor.execute("SELECT j.user_id FROM events e JOIN journeys j ON e.journey_id = j.journey_id WHERE e.event_id = %s", (target_id,))
+            event_owner = cursor.fetchone()
+            if event_owner:
+                from app.utils.achievement import AchievementUtils
+                AchievementUtils.check_popular_traveller_achievement(event_owner['user_id'])
+
     # Return the response with the new count and status
     return jsonify({
         'success': True,

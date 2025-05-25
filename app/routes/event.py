@@ -10,6 +10,7 @@ from app.config import constants
 from app.utils.decorators import login_required, role_required, login_and_role_required
 from app.db import db
 from app.utils.helpers import allowed_file
+from app.utils.achievement import AchievementUtils
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
@@ -168,6 +169,14 @@ def add_event(journey_id):
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (journey_id, form_data['title'], form_data['description'],
                   form_data['start_time'], form_data['end_time'], form_data['location'], event_image))
+            
+            # Check for Event Creator achievement
+            AchievementUtils.check_event_creator_achievement(user_id)
+            # Check for Location Explorer achievement (5 unique locations)
+            AchievementUtils.check_location_explorer_achievement(user_id)
+            # Check for Long Voyager achievement (journey > 30 days)
+            AchievementUtils.check_long_voyager_achievement(user_id, journey_id)
+
         # Update the `update_date` of a journey
         with db.get_cursor() as cursor:
             cursor.execute("""
@@ -389,6 +398,8 @@ def edit_event(event_id):
             cursor.execute("""
                 UPDATE journeys SET update_date = CURRENT_TIMESTAMP WHERE journey_id = %s
                            """, (form_data['journey_id'],))
+        # Check for Long Voyager achievement (journey > 30 days)
+        AchievementUtils.check_long_voyager_achievement(user_id, form_data['journey_id'])
         flash('Event updated successfully', constants.FLASH_MESSAGE_SUCCESS)
         return redirect(url_for('view_journey', journey_id=form_data['journey_id'], mode=form_data['mode']))
 

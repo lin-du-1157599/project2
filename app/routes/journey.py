@@ -1,8 +1,9 @@
 from app import app
-from flask import redirect, render_template, request, session, url_for, flash
+from flask import redirect, render_template, request, session, url_for, flash, jsonify
 from app.config import constants
 from app.utils.decorators import login_required, login_and_role_required, subscription_required
 from app.utils.sidebar import user_profile_sidebar
+from app.utils.achievement import AchievementUtils
 
 from app.db import db
 from app.utils.validators import validate_journey
@@ -74,7 +75,6 @@ def add_journey():
                                status=status,
                                shareable=shareable)
 
-
     with db.get_cursor() as cursor:
         cursor.execute('''
                         INSERT INTO journeys (user_id, title, description, start_date, status)
@@ -82,6 +82,13 @@ def add_journey():
                         ''',
                         (user_id, title, description, start_date, status)
                         )
+        
+        # 检查是否获得"首次创建旅程"成就
+        if AchievementUtils.check_first_journey_achievement(user_id):
+            achievement = AchievementUtils.get_achievement_notification('Journey Beginner')
+            if achievement:
+                flash(f'Congratulations! You earned the {achievement["name"]} achievement!', constants.FLASH_MESSAGE_SUCCESS)
+
     flash('Journey created successfully!', constants.FLASH_MESSAGE_SUCCESS)
     return redirect(url_for(constants.URL_MYJOURNEY))
     
@@ -270,12 +277,12 @@ def view_journey(journey_id):
     mode = request.args.get(constants.REQUEST_MODE)
     user_role = session[constants.USER_ROLE]
 
-    # Retrieve journey details with author information
     with db.get_cursor() as cursor:
+        # Get journey details
         cursor.execute("""
             SELECT j.*, u.username, u.first_name, u.last_name, u.profile_image,
                    MIN(e.start_time) as journey_start,
-                    EXISTS(
+                   EXISTS(
                      SELECT 1
                      FROM user_follows uf
                      WHERE uf.user_id = %s
@@ -289,17 +296,15 @@ def view_journey(journey_id):
         """, (user_id, journey_id))
         journey = cursor.fetchone()
 
-        # Check if journey exists and user has permission to view it
         if not journey:
             flash('Journey not found.', constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for(constants.URL_PUBLIC_JOURNEY))
 
-        # Check if journey is private and not owned by current user
+        # Check permissions
         if journey['status'] == 'private' and journey['user_id'] != user_id:
             flash('You do not have permission to view this journey.', constants.FLASH_MESSAGE_DANGER)
             return redirect(url_for(constants.URL_PUBLIC_JOURNEY))
 
-        # Check if journey is hidden and user is not editor or admin
         if journey['is_hidden'] == 1:
             with db.get_cursor() as role_cursor:
                 role_cursor.execute("SELECT role FROM users WHERE user_id = %s", (user_id,))
@@ -309,7 +314,19 @@ def view_journey(journey_id):
                 flash('This journey is not available.', constants.FLASH_MESSAGE_DANGER)
                 return redirect(url_for(constants.URL_PUBLIC_JOURNEY))
 
-        # Get all event details for this journey
+        # Record view if journey is public and user is not the owner
+        if journey['status'] == 'public' and journey['user_id'] != user_id:
+            cursor.execute("""
+                INSERT INTO journey_views (journey_id, user_id, viewed_at)
+                VALUES (%s, %s, %s)
+            """, (journey_id, user_id, datetime.now()))
+            
+            # Check for Discovery Pioneer achievement
+            if AchievementUtils.check_discovery_pioneer_achievement(user_id, journey_id):
+                achievement = AchievementUtils.get_achievement_notification('Discovery Pioneer')
+                flash(f'Congratulations! You earned the {achievement["name"]} achievement!', 'success')
+
+        # Get events and locations
         cursor.execute("""
             SELECT * FROM events 
             WHERE journey_id = %s
@@ -559,5 +576,47 @@ def unfollow_journey(journey_id):
 
         flash('You have unfollowed this journey.', constants.FLASH_MESSAGE_SUCCESS)
         return redirect(url_for('view_journey', journey_id=journey_id, mode=mode))
+
+
+@app.route('/update_status/<int:journey_id>', methods=['POST'])
+@login_required
+def update_journey_status(journey_id):
+    """Update journey status (public/private)"""
+    user_id = session[constants.USER_ID]
+    new_status = request.form.get('status')
+    
+    if new_status not in ['public', 'private']:
+        flash('Invalid status', 'error')
+        return redirect(url_for('view_journey', journey_id=journey_id))
+    
+    with db.get_cursor() as cursor:
+        # Check if user owns the journey
+        cursor.execute("""
+            SELECT user_id 
+            FROM journeys 
+            WHERE journey_id = %s
+        """, (journey_id,))
+        journey = cursor.fetchone()
+        
+        if not journey or journey['user_id'] != user_id:
+            flash('Unauthorized', 'error')
+            return redirect(url_for('view_journey', journey_id=journey_id))
+        
+        # Update status
+        cursor.execute("""
+            UPDATE journeys 
+            SET status = %s,
+                updated_at = %s
+            WHERE journey_id = %s
+        """, (new_status, datetime.now(), journey_id))
+        
+        # Check for First Share achievement if making public
+        if new_status == 'public':
+            if AchievementUtils.check_first_share_achievement(user_id):
+                achievement = AchievementUtils.get_achievement_notification('First Share')
+                flash(f'Congratulations! You earned the {achievement["name"]} achievement!', 'success')
+        
+        flash('Journey status updated successfully', 'success')
+        return redirect(url_for('view_journey', journey_id=journey_id))
 
 
