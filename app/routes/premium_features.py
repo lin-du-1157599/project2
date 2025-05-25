@@ -48,22 +48,22 @@ def start_trial():
             if not subscription:
                 flash("No free trial available.", constants.FLASH_MESSAGE_DANGER)
                 return redirect(url_for(constants.URL_SUBSCRIPTION))
-        process_subscription(constants.USER_SUBSCRIPTION_TRIAL, constants.USER_IS_TRIAL_USED_YES, subscription[constants.SUBSCRIPTION_ID], constants.SUBSCRIPTIONS_DURATION_MONTHS_ONE, 
-                         None, None, None, None, None, None, None)
+        process_subscription(constants.USER_SUBSCRIPTION_TRIAL, constants.USER_IS_TRIAL_USED_YES, None, subscription[constants.SUBSCRIPTION_ID], constants.SUBSCRIPTIONS_DURATION_MONTHS_ONE, 
+                         None, None, None, None, None, None, None, None)
     except Exception as e:
         flash("An error occurred. Please try again later.", constants.FLASH_MESSAGE_DANGER)
         print("Error:", e)
         return render_template(constants.TEMPLATE_PAYMENT, subscription=subscription)
     return redirect(url_for(constants.URL_SUBSCRIPTION))
 
-def process_subscription(subscription_status, is_trial_used, subscription_id, duration_months, 
-                         billing_country, billing_address, card_number, expiry_date, cvv, amount_paid, price_nzd_excl_gst):
+def process_subscription(subscription_status, is_trial_used, is_admin_grantable, subscription_id, duration_months, 
+                         billing_country, billing_address, card_number, expiry_date, cvv, amount_paid, price_nzd_excl_gst, recipient_id):
     with db.get_cursor() as cursor:
         cursor.execute("""
             SELECT  subscription_end_date, remaining_months FROM users WHERE user_id = %s
         """, (session.get(constants.USER_ID), ))
         user = cursor.fetchone()
-
+    
         sql = "UPDATE users SET subscription_status = %s, subscription_end_date = %s, remaining_months = %s"
         subscription_end_date = user[constants.USER_SUBSCRIPTION_END_DATE]
         if subscription_end_date is None:
@@ -76,24 +76,37 @@ def process_subscription(subscription_status, is_trial_used, subscription_id, du
             sql += ", is_trial_used = %s"
             params.append(is_trial_used)
         sql += " WHERE user_id = %s"
-        params.append(session.get(constants.USER_ID))
+        if is_admin_grantable is not None:
+            params.append(recipient_id)
+        else:
+            params.append(session.get(constants.USER_ID))
         cursor.execute(sql, tuple(params))
 
         start_date = date.today()
         end_date = start_date + relativedelta(months=+duration_months)
-        cursor.execute("""
-            INSERT INTO user_subscriptions (user_id, subscription_id, start_date, end_date)
-            VALUES (%s, %s, %s, %s)
-        """, (session.get(constants.USER_ID), subscription_id, start_date, end_date))
+        if is_admin_grantable is not None:
+            cursor.execute("""
+                INSERT INTO user_subscriptions (user_id, subscription_id, start_date, end_date, gifted_by)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (recipient_id, subscription_id, start_date, end_date, session.get(constants.USER_ID)))
+        else:
+            cursor.execute("""
+                INSERT INTO user_subscriptions (user_id, subscription_id, start_date, end_date)
+                VALUES (%s, %s, %s, %s)
+            """, (session.get(constants.USER_ID), subscription_id, start_date, end_date))
         user_subscription_id = cursor.lastrowid
 
-        if is_trial_used is not None:
-            session[constants.USER_IS_TRIAL_USED] = constants.USER_IS_TRIAL_USED_YES
+        if is_trial_used is not None or is_admin_grantable is not None:
+            if is_trial_used is not None:
+                session[constants.USER_IS_TRIAL_USED] = constants.USER_IS_TRIAL_USED_YES
+                session[constants.USER_SUBSCRIPTION_END_DATE] = new_end_date.strftime('%d/%m/%Y')
+                flash(f"Your {duration_months}-month{'s' if duration_months != 1 else ''} free trial has started!", constants.FLASH_MESSAGE_SUCCESS)
+            else:
+                flash(f"{duration_months}-month{'s' if duration_months != 1 else ''} subscription gifted successfully!", constants.FLASH_MESSAGE_SUCCESS)
         else:
             subscription_payment(billing_country, billing_address, card_number, expiry_date, cvv, price_nzd_excl_gst,amount_paid, user_subscription_id, cursor)
-
-        flash(f"Your {duration_months}-month{'s' if duration_months != 1 else ''} free trial has started!", constants.FLASH_MESSAGE_SUCCESS)
-        session[constants.USER_SUBSCRIPTION_END_DATE] = new_end_date.strftime('%d/%m/%Y')
+            flash(f"Your {duration_months}-month{'s' if duration_months != 1 else ''} subscription activated successfully.!", constants.FLASH_MESSAGE_SUCCESS)
+            session[constants.USER_SUBSCRIPTION_END_DATE] = new_end_date.strftime('%d/%m/%Y')
 
 def subscription_payment(billing_country, billing_address, card_number, expiry_date, cvv, price_nzd_excl_gst, amount_paid, user_subscription_id, cursor):
     if(billing_country == constants.REQUEST_BILLING_COUNTRY_NZ):
@@ -147,7 +160,8 @@ def process_payment():
         flash("Please fill in all payment details.",constants.FLASH_MESSAGE_DANGER)
         return render_template(constants.TEMPLATE_PAYMENT, subscription=subscription)
     try:
-        process_subscription(constants.USER_SUBSCRIPTION_PREMIUM, None, subscription_id, duration_months, billing_country, billing_address, card_number, expiry_date, cvv, price_to_pay, price_nzd_excl_gst)
+        process_subscription(constants.USER_SUBSCRIPTION_PREMIUM, None, None, subscription_id, duration_months, 
+                             billing_country, billing_address, card_number, expiry_date, cvv, price_to_pay, price_nzd_excl_gst, None)
     except Exception as e:
         flash("An error occurred. Please try again later.", constants.FLASH_MESSAGE_DANGER)
         print("Error:", e)
@@ -183,3 +197,27 @@ def subscription_history():
 
     return render_template(constants.TEMPLATE_SUBSCRIPTION_HISTORY, subscriptions=subscriptions)
 
+@app.route('/gift_subscription', methods=[constants.HTTP_METHOD_GET])
+@login_and_role_required([constants.USER_ROLE_ADMIN])
+def gift_subscription():
+    recipient_id = request.args.get(constants.USER_ID)
+    duration_months_str = request.args.get(constants.SUBSCRIPTION_DURATION_MONTHS)
+    duration_months = int(duration_months_str)
+
+    try:
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT subscription_id FROM subscriptions WHERE is_admin_grantable = %s AND duration_months = %s 
+            """, (constants.USER_IS_ADMIN_GRANTABLE_YES, duration_months))
+            subscription = cursor.fetchone()
+
+            if not subscription:
+                flash("No free trial available.", constants.FLASH_MESSAGE_DANGER)
+                return redirect(url_for(constants.URL_SUBSCRIPTION))
+            process_subscription(constants.USER_SUBSCRIPTION_PREMIUM, None, constants.USER_IS_ADMIN_GRANTABLE_YES, subscription[constants.SUBSCRIPTION_ID], duration_months, 
+                         None, None, None, None, None, None, None, recipient_id)
+    except Exception as e:
+        flash("An error occurred. Please try again later.", constants.FLASH_MESSAGE_DANGER)
+        print("Error:", e)
+        return redirect(url_for('all_users'))
+    return redirect(url_for('all_users'))

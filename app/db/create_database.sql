@@ -87,6 +87,7 @@ CREATE TABLE user_subscriptions (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     status ENUM('active', 'expired') NOT NULL DEFAULT 'active',
+    gifted_by INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (subscription_id) REFERENCES subscriptions(subscription_id)
