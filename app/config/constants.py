@@ -186,3 +186,21 @@ PAYMENT_USER_SUBSCRIPTION_ID = 'user_subscription_id'
 # messages
 MAX_MESSAGE_LENGTH = 1000
 UNREAD_MESSAGE_CHECK_INTERVAL = 30000
+
+# Community-related constants
+URL_PUBLIC_USERS = 'public_users'
+URL_VIEW_PUBLIC_PROFILE = 'view_public_profile'
+URL_COMMUNITY_SETTINGS = 'community_settings'
+TEMPLATE_PUBLIC_USERS = 'community/public_users.html'
+TEMPLATE_PUBLIC_PROFILE = 'community/public_profile.html'
+TEMPLATE_COMMUNITY_SETTINGS = 'community/settings.html'
+
+# Additional user fields
+USER_IS_PUBLIC_PROFILE = 'is_public_profile'
+USER_FOLLOWER_COUNT = 'follower_count'
+USER_FOLLOWING_COUNT = 'following_count'
+
+# Activity types
+ACTIVITY_TYPE_LIKE = 'like'
+ACTIVITY_TYPE_COMMENT = 'comment'
+ACTIVITY_TYPE_JOURNEY_UPDATE = 'journey_update'

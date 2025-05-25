@@ -22,6 +22,7 @@ app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'ann
 app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'departure_board'))
 app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'premium_features'))
 app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'moderation'))
+app.jinja_loader.searchpath.append(os.path.join(app.root_path, 'templates', 'community'))
 
 # Set the "secret key" that our app will use to sign session cookies. This can
 # be anything.
@@ -57,3 +58,4 @@ from app.config import constants
 from app.routes.community import comments
 from app.routes.community import reactions
 from app.routes.community import moderation
+from app.routes.community import public_user

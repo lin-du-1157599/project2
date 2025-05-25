@@ -253,6 +253,11 @@
 							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'public_journeys' else '' }}" href="{{ url_for('public_journeys') }}">Explore</a></h4>
 						</li>
 
+						<!-- Community Features -->
+						<li class="nav-item p-2">
+							<h4 class="fw-bold m-0"><a class="nav-link{{ ' active' if active_page == 'public_users' else '' }}" href="{{ url_for('public_users') }}">Community</a></h4>
+						</li>
+
 						<!-- User Management -->
 						{% if session['role'] == 'admin' %}
 							<li class="nav-item dropdown py-2">
