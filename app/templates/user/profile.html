@@ -56,9 +56,9 @@
                     <h4 style="color: #646464">@{{ profile.username }}
                         <span class="badge bg-secondary ms-2">{{ profile.subscription_status | capitalize }}</span>
                     </h4>
-                    {% if session.get('subscription_end_date') %}
+                    {% if profile.subscription_end_date %}
                         <p class="text-muted">
-                            Subscription expires on: {{ session.get('subscription_end_date') }}
+                            Subscription expires on: {{ profile.subscription_end_date.strftime("%d/%m/%Y") }}
                         </p>
                     {% endif %}
 
