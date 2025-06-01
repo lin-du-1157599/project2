@@ -106,7 +106,7 @@
                     <p class="text-muted">Your private conversations will appear here</p>
                     {% if session['subscription_status'] == 'Free' and session['role'] == 'traveller' %}
                     <p class="text-muted">
-                        <a href="{{ url_for('subscription_page') }}" class="btn btn-primary">
+                        <a href="{{ url_for('subscription') }}" class="btn btn-primary">
                             Upgrade to Premium
                         </a> to start messaging other users
                     </p>

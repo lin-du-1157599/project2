@@ -34,13 +34,13 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="start_time" class="form-label fw-bold fs-5">Start Time*</label>
-                                <input type="datetime-local" class="form-control form-control-lg" id="start_time"
+                                <input type="text" class="form-control form-control-lg" id="start_time"
                                     name="start_time" required value="{{ form_data.start_time if form_data is defined else '' }}">
-                                 <div class="form-text">Start time should not be earlier than journey start time.</div>
+                                <div class="form-text">Start time should not be earlier than journey start time.</div>
                             </div>
                             <div class="col-md-6">
                                 <label for="end_time" class="form-label fw-bold fs-5">End Time</label>
-                                <input type="datetime-local" class="form-control form-control-lg" id="end_time"
+                                <input type="text" class="form-control form-control-lg" id="end_time"
                                     name="end_time" value="{{ form_data.end_time if form_data is defined and form_data.end_time else '' }}">
                             </div>
                         </div>
@@ -60,8 +60,11 @@
 
                         <div class="mb-3">
                             <label for="event_image" class="form-label fw-bold fs-5">Event Image</label>
-                            <input type="file" class="form-control form-control-lg" id="event_image" name="event_image"
-                                accept="image/*">
+                            <div class="custom-file-upload-wrapper">
+                                <input type="file" class="form-control form-control-lg d-none" id="event_image" name="event_image" accept="image/*" onchange="updateFileName()">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('event_image').click();">Choose Image</button>
+                                <span id="file-chosen" class="ms-2">No file chosen</span>
+                            </div>
                             <div class="form-text">Optional: You can add one image. Supported formats: JPG, PNG, GIF.</div>
                         </div>
 
@@ -77,20 +80,32 @@
     </div>
 </div>
 
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Remove any date restrictions on start_time
-    const startTimeInput = document.getElementById('start_time');
-    const endTimeInput = document.getElementById('end_time');
-
-
-    // Update end_time min when start_time changes
-    startTimeInput.addEventListener('change', function() {
-        endTimeInput.min = this.value;
-    });
-
-    // Initialize end_time min based on current start_time value
-    endTimeInput.min = startTimeInput.value;
+flatpickr("#start_time", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    locale: "en"
 });
+flatpickr("#end_time", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    locale: "en"
+});
+
+function updateFileName() {
+    const input = document.getElementById('event_image');
+    const fileChosen = document.getElementById('file-chosen');
+    if (input.files && input.files.length > 0) {
+        fileChosen.textContent = input.files[0].name;
+    } else {
+        fileChosen.textContent = 'No file chosen';
+    }
+}
 </script>
 {% endblock %}

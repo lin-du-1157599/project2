@@ -18,11 +18,20 @@ from app.utils.validators import validate_announcement
 @login_required
 def announcements_list():
     user_role = session[constants.USER_ROLE]
+    user_id = session[constants.USER_ID]
 
+    import re
     with db.get_cursor() as cursor:
-        cursor.execute("SELECT * FROM announcements ORDER BY created_time DESC")
+        cursor.execute("SELECT * FROM announcements WHERE user_id = %s ORDER BY created_time DESC", (user_id,))
         announcementsList = cursor.fetchall()
-        return render_template(constants.TEMPLATE_ANNOUNCEMENTS, announcementsList = announcementsList, user_role = user_role)
+        # 处理成就名称
+        for ann in announcementsList:
+            if ann['title'] == 'Achievement Unlocked':
+                match = re.search(r"'([^']+)' achievement", ann['content'])
+                ann['achievement_name'] = match.group(1) if match else None
+            else:
+                ann['achievement_name'] = None
+        return render_template(constants.TEMPLATE_ANNOUNCEMENTS, announcementsList=announcementsList, user_role=user_role)
 
 @app.route('/announcements/view/<int:announcement_id>', methods=[constants.HTTP_METHOD_GET])
 @login_required

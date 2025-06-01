@@ -240,3 +240,16 @@ INSERT INTO subscriptions (
     ('Admin Gift One Quarter', 3, 0, 100.00, 0.00, 0.00, 1),
     ('Admin Gift One Year', 12, 0, 100.00, 0.00, 0.00, 1);
 
+-- Insert default achievements
+INSERT INTO achievements (name, description, icon_url, is_premium_only, condition_type, condition_value)
+VALUES 
+('Journey Beginner', 'Create your first journey', '/static/icons/journey_beginner.png', 0, 'First-time', NULL),
+('Event Creator', 'Add your first event to any journey', '/static/icons/event_creator.png', 0, 'First-time', NULL),
+('First Comment', 'Make your first comment on another user\'s shared event', '/static/icons/first_comment.png', 0, 'First-time', NULL),
+('First Share', 'Share a journey publicly for the first time', '/static/icons/first_share.png', 0, 'First-time', NULL),
+('Discovery Pioneer', 'Be the first to view another user\'s newly shared journey', '/static/icons/discovery_pioneer.png', 0, 'First-time', NULL),
+('Location Explorer', 'Record events at 5 different locations', '/static/icons/location_explorer.png', 0, 'Cumulative', 5),
+('Sharing Guru', 'Share 5 different journeys publicly', '/static/icons/sharing_guru.png', 0, 'Cumulative', 5),
+('Popular Traveller', 'Receive 5 likes across your shared events', '/static/icons/popular_traveller.png', 0, 'Cumulative', 5),
+('Long Voyager', 'Complete a journey that spans more than 30 days', '/static/icons/long_voyager.png', 0, 'One-time', 30);
+

@@ -89,6 +89,13 @@ def add_journey():
             if achievement:
                 flash(f'Congratulations! You earned the {achievement["name"]} achievement!', constants.FLASH_MESSAGE_SUCCESS)
 
+        # 检查是否获得"首次公开分享"成就
+        if status == 'public':
+            if AchievementUtils.check_first_share_achievement(user_id):
+                achievement = AchievementUtils.get_achievement_notification('First Share')
+                if achievement:
+                    flash(f'Congratulations! You earned the {achievement["name"]} achievement!', constants.FLASH_MESSAGE_SUCCESS)
+
     flash('Journey created successfully!', constants.FLASH_MESSAGE_SUCCESS)
     return redirect(url_for(constants.URL_MYJOURNEY))
     
@@ -614,6 +621,11 @@ def update_journey_status(journey_id):
         if new_status == 'public':
             if AchievementUtils.check_first_share_achievement(user_id):
                 achievement = AchievementUtils.get_achievement_notification('First Share')
+                flash(f'Congratulations! You earned the {achievement["name"]} achievement!', 'success')
+            
+            # Check for Sharing Guru achievement
+            if AchievementUtils.check_sharing_guru_achievement(user_id):
+                achievement = AchievementUtils.get_achievement_notification('Sharing Guru')
                 flash(f'Congratulations! You earned the {achievement["name"]} achievement!', 'success')
         
         flash('Journey status updated successfully', 'success')

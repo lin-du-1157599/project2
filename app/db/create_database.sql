@@ -233,6 +233,16 @@ CREATE TABLE departure_board_events (
     FOREIGN KEY (user_follow_id) REFERENCES user_follows(user_follow_id) ON DELETE CASCADE
 );
 
+CREATE TABLE event_reactions (
+    reaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    event_id INT NOT NULL,
+    user_id INT NOT NULL,
+    reaction_type ENUM('like', 'love', 'wow') NOT NULL DEFAULT 'like',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
 ALTER TABLE users MODIFY role ENUM('traveller', 'editor', 'admin', 'moderator') NOT NULL DEFAULT 'traveller';
 
 ALTER TABLE users 
@@ -256,5 +266,8 @@ ALTER TABLE private_messages
 ADD COLUMN is_read TINYINT NOT NULL DEFAULT 0,
 ADD INDEX idx_receiver_read (receiver_id, is_read),
 ADD INDEX idx_conversation (sender_id, receiver_id);
+
+ALTER TABLE user_achievements
+ADD UNIQUE KEY unique_user_achievement (user_id, achievement_id);
 
 SET FOREIGN_KEY_CHECKS = 1;

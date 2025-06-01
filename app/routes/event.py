@@ -171,7 +171,10 @@ def add_event(journey_id):
                   form_data['start_time'], form_data['end_time'], form_data['location'], event_image))
             
             # Check for Event Creator achievement
-            AchievementUtils.check_event_creator_achievement(user_id)
+            if AchievementUtils.check_event_creator_achievement(user_id):
+                achievement = AchievementUtils.get_achievement_notification('Event Creator')
+                if achievement:
+                    flash(f'Congratulations! You earned the {achievement["name"]} achievement!', 'success')
             # Check for Location Explorer achievement (5 unique locations)
             AchievementUtils.check_location_explorer_achievement(user_id)
             # Check for Long Voyager achievement (journey > 30 days)

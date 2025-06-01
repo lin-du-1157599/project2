@@ -38,7 +38,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="start_time" class="form-label fw-bold fs-5">Start Time*</label>
-                                <input type="datetime-local" class="form-control form-control-lg" id="start_time"
+                                <input type="text" class="form-control form-control-lg" id="start_time"
                                     name="start_time" required
                                     value="{{ event.start_time.strftime('%Y-%m-%dT%H:%M') if event.start_time else '' }}"
                                     {% if mode != 'all' %} readonly {% endif %}>
@@ -46,7 +46,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="end_time" class="form-label fw-bold fs-5">End Time</label>
-                                <input type="datetime-local" class="form-control form-control-lg" id="end_time"
+                                <input type="text" class="form-control form-control-lg" id="end_time"
                                     name="end_time"
                                     value="{% if event.end_time %}{{ event.end_time.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
                                     {% if mode != 'all' %} readonly {% endif %}>
@@ -84,8 +84,11 @@
                             {% endif %}
 
                             {% if mode == 'all' %}
-                            <input type="file" class="form-control form-control-lg" id="event_image" name="event_image"
-                                accept="image/*">
+                            <div class="custom-file-upload-wrapper">
+                                <input type="file" class="form-control form-control-lg d-none" id="event_image" name="event_image" accept="image/*" onchange="updateFileName()">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('event_image').click();">Choose Image</button>
+                                <span id="file-chosen" class="ms-2">No file chosen</span>
+                            </div>
                             <div class="form-text">Optional: {% if event.event_image %}Upload a new image to replace the current one.{% else %}You can add one image.{% endif %} Supported formats: JPG, PNG, GIF.</div>
                            {% endif %}
                         </div>
@@ -102,22 +105,22 @@
     </div>
 </div>
 
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
-    
-document.addEventListener('DOMContentLoaded', function() {
-    const startTimeInput = document.getElementById('start_time');
-    const endTimeInput = document.getElementById('end_time');
-
-    // No restrictions on start time
-
-    // Update end_time min when start_time changes
-    startTimeInput.addEventListener('change', function() {
-        // Only set the min value if the end time already has a value
-        endTimeInput.min = this.value;
-    });
-
-    // If there's an end time, make sure start time is set as minimum
-    endTimeInput.min = startTimeInput.value;
+flatpickr("#start_time", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    locale: "en"
+});
+flatpickr("#end_time", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    locale: "en"
 });
 
     function toggleImage() {
@@ -128,6 +131,16 @@ document.addEventListener('DOMContentLoaded', function() {
             image.style.display = "none";
         } else {
             image.style.display = "block";
+        }
+    }
+
+    function updateFileName() {
+        const input = document.getElementById('event_image');
+        const fileChosen = document.getElementById('file-chosen');
+        if (input.files && input.files.length > 0) {
+            fileChosen.textContent = input.files[0].name;
+        } else {
+            fileChosen.textContent = 'No file chosen';
         }
     }
 </script>

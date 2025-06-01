@@ -188,13 +188,34 @@ def view_public_profile(user_id):
 
         # Get user achievements
         cursor.execute("""
-            SELECT a.name,a.description,a.icon_url,a.is_premium_only,
-                   ua.unlocked_at,ua.is_unlocked
-            FROM user_achievements ua
-            JOIN achievements a ON ua.achievement_id = a.achievement_id
-            WHERE ua.user_id = %s AND ua.is_unlocked = 1
-            ORDER BY ua.unlocked_at DESC
-        """, (user_id,))
+            SELECT a.achievement_id, a.name, a.description, a.icon_url, a.is_premium_only,
+                   a.condition_type, a.condition_value,
+                   ua.unlocked_at, ua.is_unlocked,
+                   CASE 
+                       WHEN a.name = 'Location Explorer' THEN (
+                           SELECT COUNT(DISTINCT location)
+                           FROM events e
+                           JOIN journeys j ON e.journey_id = j.journey_id
+                           WHERE j.user_id = %s
+                       )
+                       WHEN a.name = 'Sharing Guru' THEN (
+                           SELECT COUNT(*)
+                           FROM journeys
+                           WHERE user_id = %s AND status = 'public'
+                       )
+                       WHEN a.name = 'Popular Traveller' THEN (
+                           SELECT COUNT(*)
+                           FROM event_reactions er
+                           JOIN events e ON er.event_id = e.event_id
+                           JOIN journeys j ON e.journey_id = j.journey_id
+                           WHERE j.user_id = %s AND er.reaction_type = 'like'
+                       )
+                       ELSE NULL
+                   END as current_progress
+            FROM achievements a
+            LEFT JOIN user_achievements ua ON a.achievement_id = ua.achievement_id AND ua.user_id = %s
+            ORDER BY a.achievement_id
+        """, (user_id, user_id, user_id, user_id))
 
         achievements = cursor.fetchall()
 

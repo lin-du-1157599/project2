@@ -33,8 +33,20 @@
             <input type="hidden" id="announcement_id" name="announcement_id" value="{{ announcement.announcement_id }}">
             <tbody>
                     <tr>
-                        <td class="p-3"><a href="{{ url_for('announcements_detail', announcement_id = announcement.announcement_id) }}" style="font-weight: bold;" class="text-link">{{ announcement['title'] }}</a></td>
-                        <td class="p-3">{{ announcement['created_time'].strftime('%d %b %Y') }}</td>
+                        <td class="p-3">
+                            <a href="{{ url_for('announcements_detail', announcement_id = announcement.announcement_id) }}" style="font-weight: bold;" class="text-link">
+                                {% if announcement['title'] == 'Achievement Unlocked' %}
+                                    Achievement Unlocked: 
+                                    {{ announcement['achievement_name'] if announcement['achievement_name'] else '(Unknown)' }}
+                                {% else %}
+                                    {{ announcement['title'] }}
+                                {% endif %}
+                            </a>
+                        </td>
+                        <td class="p-3">
+                            {# Convert UTC to NZT and display in 12-hour format with am/pm #}
+                            {{ announcement['created_time'].astimezone(pytz.timezone('Pacific/Auckland')).strftime('%d %b %Y, %I:%M %p') if announcement['created_time'] else '' }}
+                        </td>
                     </tr>
             </tbody>
             {% endfor %}

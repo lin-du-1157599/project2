@@ -214,12 +214,12 @@
 
                     <!-- Achievements Tab -->
                     <div class="tab-pane fade" id="achievements" role="tabpanel">
-                        {% if achievements and achievements|length > 0 %}
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                             {% for achievement in achievements %}
                             <div class="col">
                                 <div class="card border-0 shadow-sm h-100 text-center
-                                           {% if achievement.is_premium_only %}border-warning{% endif %}">
+                                           {% if achievement.is_premium_only %}border-warning{% endif %}
+                                           {% if not achievement.is_unlocked %}bg-light{% endif %}">
                                     <div class="card-body p-4">
                                         <!-- Achievement Icon -->
                                         <div class="mb-3">
@@ -228,7 +228,9 @@
                                                  class="img-fluid" style="width: 60px; height: 60px;">
                                             {% else %}
                                             <i class="fas fa-trophy fa-3x
-                                               {% if achievement.is_premium_only %}text-warning{% else %}text-primary{% endif %}"></i>
+                                               {% if achievement.is_premium_only %}text-warning
+                                               {% elif achievement.is_unlocked %}text-primary
+                                               {% else %}text-muted{% endif %}"></i>
                                             {% endif %}
                                         </div>
 
@@ -240,21 +242,37 @@
                                         <span class="badge bg-warning text-dark mb-2">Premium</span>
                                         {% endif %}
 
+                                        <!-- Progress Bar -->
+                                        {% if achievement.condition_type == 'Cumulative' and achievement.current_progress is not none %}
+                                        <div class="progress mb-2" style="height: 6px;">
+                                            <div class="progress-bar {% if achievement.is_unlocked %}bg-success{% else %}bg-primary{% endif %}"
+                                                 role="progressbar"
+                                                 style="width: {{ (achievement.current_progress / achievement.condition_value * 100)|round|int }}%"
+                                                 aria-valuenow="{{ achievement.current_progress }}"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="{{ achievement.condition_value }}">
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small mb-2">
+                                            Progress: {{ achievement.current_progress }}/{{ achievement.condition_value }}
+                                            ({{ (achievement.current_progress / achievement.condition_value * 100)|round|int }}%)
+                                        </p>
+                                        {% endif %}
+
+                                        {% if achievement.is_unlocked %}
                                         <p class="text-muted small mb-0">
                                             Earned {{ achievement.unlocked_at.strftime('%d %b %Y') }}
                                         </p>
+                                        {% else %}
+                                        <p class="text-muted small mb-0">
+                                            Not earned yet
+                                        </p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
-                        {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-trophy fa-3x mb-3" style="color: #ccc;"></i>
-                            <h4 class="text-muted">No achievements yet</h4>
-                            <p class="text-muted">Achievements will appear here as they are earned.</p>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@ class AchievementUtils:
     @staticmethod
     def check_first_journey_achievement(user_id):
         """Check if user has earned the 'Journey Beginner' achievement"""
+        print("DEBUG: check_first_journey_achievement called for user", user_id)
         with db.get_cursor() as cursor:
             # Skip if already earned
             cursor.execute("""
@@ -13,6 +14,7 @@ class AchievementUtils:
                 WHERE ua.user_id = %s AND a.name = 'Journey Beginner'
             """, (user_id,))
             if cursor.fetchone():
+                print("DEBUG: Already has 'Journey Beginner' achievement")
                 return False
 
             # Check journey count
@@ -21,37 +23,55 @@ class AchievementUtils:
                 FROM journeys
                 WHERE user_id = %s
             """, (user_id,))
-            if cursor.fetchone()['count'] == 1:
+            count = cursor.fetchone()['count']
+            print("DEBUG: journey count for user", user_id, "is", count)
+            if count == 1:
                 # Get and unlock achievement
                 cursor.execute("""
                     SELECT achievement_id, name FROM achievements
                     WHERE name = 'Journey Beginner'
                 """)
                 achievement = cursor.fetchone()
+                print("DEBUG: achievement query result:", achievement)
                 if achievement:
-                    cursor.execute("""
-                        INSERT INTO user_achievements 
-                        (user_id, achievement_id, is_unlocked, unlocked_at)
-                        VALUES (%s, %s, 1, %s)
-                    """, (user_id, achievement['achievement_id'], datetime.now()))
-                    # Insert announcement
-                    cursor.execute("""
-                        INSERT INTO announcements (user_id, title, content, status, level, created_time)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                    """, (
-                        user_id,
-                        "Achievement Unlocked",
-                        f"Congratulations! You unlocked the '{achievement['name']}' achievement.",
-                        "active",
-                        "low",
-                        datetime.now()
-                    ))
-                    return True
+                    try:
+                        cursor.execute("""
+                            INSERT INTO user_achievements 
+                            (user_id, achievement_id, is_unlocked, unlocked_at)
+                            VALUES (%s, %s, 1, %s)
+                        """, (user_id, achievement['achievement_id'], datetime.now()))
+                        print("DEBUG: Inserted into user_achievements")
+                        # Insert announcement（插入前先查重）
+                        cursor.execute("""
+                            SELECT 1 FROM announcements
+                            WHERE user_id = %s AND content LIKE %s
+                        """, (user_id, f"%{achievement['name']}%"))
+                        if not cursor.fetchone():
+                            cursor.execute("""
+                                INSERT INTO announcements (user_id, title, content, status, level, created_time)
+                                VALUES (%s, %s, %s, %s, %s, %s)
+                            """, (
+                                user_id,
+                                "Achievement Unlocked",
+                                f"Congratulations! You unlocked the '{achievement['name']}' achievement.",
+                                "active",
+                                "low",
+                                datetime.now()
+                            ))
+                        print("DEBUG: Inserted into announcements (if not duplicate)")
+                        return True
+                    except Exception as e:
+                        print("DEBUG: Error inserting achievement:", str(e))
+                        return False
+                else:
+                    print("DEBUG: No achievement found in achievements table")
+        print("DEBUG: Did not meet conditions for achievement")
         return False
 
     @staticmethod
     def check_event_creator_achievement(user_id):
         """Check if user has earned the 'Event Creator' achievement"""
+        print(f"DEBUG: check_event_creator_achievement called for user {user_id}")
         with db.get_cursor() as cursor:
             # Skip if already earned
             cursor.execute("""
@@ -60,6 +80,7 @@ class AchievementUtils:
                 WHERE ua.user_id = %s AND a.name = 'Event Creator'
             """, (user_id,))
             if cursor.fetchone():
+                print(f"DEBUG: User {user_id} already has 'Event Creator' achievement")
                 return False
 
             # Check event count
@@ -69,32 +90,49 @@ class AchievementUtils:
                 JOIN journeys j ON e.journey_id = j.journey_id
                 WHERE j.user_id = %s
             """, (user_id,))
-            if cursor.fetchone()['count'] == 1:
+            count = cursor.fetchone()['count']
+            print(f"DEBUG: User {user_id} event count is {count}")
+            if count == 1:
                 # Get and unlock achievement
                 cursor.execute("""
                     SELECT achievement_id, name FROM achievements
                     WHERE name = 'Event Creator'
                 """)
                 achievement = cursor.fetchone()
+                print(f"DEBUG: achievement query result: {achievement}")
                 if achievement:
-                    cursor.execute("""
-                        INSERT INTO user_achievements 
-                        (user_id, achievement_id, is_unlocked, unlocked_at)
-                        VALUES (%s, %s, 1, %s)
-                    """, (user_id, achievement['achievement_id'], datetime.now()))
-                    # Insert announcement
-                    cursor.execute("""
-                        INSERT INTO announcements (user_id, title, content, status, level, created_time)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                    """, (
-                        user_id,
-                        "Achievement Unlocked",
-                        f"Congratulations! You unlocked the '{achievement['name']}' achievement.",
-                        "active",
-                        "low",
-                        datetime.now()
-                    ))
-                    return True
+                    try:
+                        cursor.execute("""
+                            INSERT INTO user_achievements 
+                            (user_id, achievement_id, is_unlocked, unlocked_at)
+                            VALUES (%s, %s, 1, %s)
+                        """, (user_id, achievement['achievement_id'], datetime.now()))
+                        print(f"DEBUG: Inserted into user_achievements for user {user_id}")
+                        # Insert announcement（插入前先查重）
+                        cursor.execute("""
+                            SELECT 1 FROM announcements
+                            WHERE user_id = %s AND content LIKE %s
+                        """, (user_id, f"%{achievement['name']}%"))
+                        if not cursor.fetchone():
+                            cursor.execute("""
+                                INSERT INTO announcements (user_id, title, content, status, level, created_time)
+                                VALUES (%s, %s, %s, %s, %s, %s)
+                            """, (
+                                user_id,
+                                "Achievement Unlocked",
+                                f"Congratulations! You unlocked the '{achievement['name']}' achievement.",
+                                "active",
+                                "low",
+                                datetime.now()
+                            ))
+                        print(f"DEBUG: Inserted into announcements (if not duplicate) for user {user_id}")
+                        return True
+                    except Exception as e:
+                        print(f"DEBUG: Error inserting achievement for user {user_id}: {str(e)}")
+                        return False
+                else:
+                    print(f"DEBUG: No achievement found in achievements table for 'Event Creator'")
+        print(f"DEBUG: Did not meet conditions for 'Event Creator' achievement for user {user_id}")
         return False
 
     @staticmethod
